@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="panel.css">
+</head>
+
+<body>
+
+  <!-- ===================== Main scan view ===================== -->
+  <div id="scan-view" class="view">
+    <!-- Top toolbar / header -->
+    <header class="toolbar">
+      <button id="scan-btn" class="btn btn-primary">
+        <span class="btn-icon">▶</span> Scan page
+      </button>
+      <div class="divider"></div>
+      <div class="summary" id="summary-text">Ready to scan</div>
+      <div class="summary-counts" id="summary-counts"></div>
+      <div class="toolbar-spacer"></div>
+      <button id="settings-btn" class="btn btn-icon-only" title="Settings" aria-label="Settings">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3" />
+          <path
+            d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+        </svg>
+      </button>
+    </header>
+
+    <!-- Main two-column area -->
+    <main class="container">
+      <!-- Left column: violations list -->
+      <section class="sidebar" id="violations-list">
+        <div class="empty-state">Click "Scan page" to start the audit.</div>
+      </section>
+
+      <!-- Right column: details of the selected issue -->
+      <section class="details-panel" id="violation-details">
+        <div class="empty-state">Select a rule from the list to see details.</div>
+      </section>
+    </main>
+  </div>
+
+  <!-- ===================== Settings view ===================== -->
+  <div id="settings-view" class="view is-hidden">
+    <header class="toolbar toolbar-settings">
+      <button id="settings-back-btn" class="btn btn-icon-only" title="Back" aria-label="Back">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round">
+          <line x1="19" y1="12" x2="5" y2="12" />
+          <polyline points="12 19 5 12 12 5" />
+        </svg>
+      </button>
+      <h1 class="settings-title">Settings</h1>
+      <div class="settings-versions">
+        <span>Extension: <strong id="version-extension">—</strong></span>
+        <span>axe-core: <strong id="version-axe">—</strong></span>
+      </div>
+    </header>
+
+    <main class="settings-content">
+      <section class="settings-card">
+        <h2 class="settings-card-title">Appearance</h2>
+
+        <div class="settings-field">
+          <label for="theme-select">Extension theme</label>
+          <div class="select-wrap">
+            <select id="theme-select">
+              <option value="system">Follow my browser's settings (Default)</option>
+              <option value="light">Light</option>
+              <option value="dark">Dark</option>
+            </select>
+          </div>
+        </div>
+      </section>
+
+      <section class="settings-card">
+        <h2 class="settings-card-title">Rules and Issues</h2>
+
+        <div class="settings-subcard">
+          <div class="settings-field settings-field-inline">
+            <label>
+              Best Practices
+              <button type="button" class="help-btn"
+                title="Includes axe-core's additional best-practice rules, which are recommendations rather than strict WCAG failures.">?</button>
+            </label>
+          </div>
+
+          <div class="radio-row" role="radiogroup" aria-label="Best Practices">
+            <label class="radio-option">
+              <input type="radio" name="best-practices" value="enable" id="bp-enable">
+              Enable
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="best-practices" value="disable" id="bp-disable">
+              Disable
+            </label>
+          </div>
+
+          <div class="settings-field">
+            <label for="wcag-select">Select accessibility standard</label>
+            <div class="select-wrap select-wrap-with-help">
+              <select id="wcag-select">
+                <option value="wcag2a">WCAG 2.0 A</option>
+                <option value="wcag2aa">WCAG 2.0 AA</option>
+                <option value="wcag2aaa">WCAG 2.0 AAA</option>
+                <option value="wcag21a">WCAG 2.1 A</option>
+                <option value="wcag21aa">WCAG 2.1 AA (axe Default)</option>
+                <option value="wcag22aa">WCAG 2.2 AA</option>
+              </select>
+              <button type="button" class="help-btn"
+                title="Determines which WCAG success-criteria rules axe-core runs. Each level includes all lower levels and versions cumulatively (e.g. WCAG 2.1 AA also runs 2.0 A/AA and 2.1 A rules).">?</button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="panel.js"></script>
+</body>
+
+</html>
