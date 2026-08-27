@@ -3,7 +3,6 @@ const inspectedTabId = chrome.devtools.inspectedWindow.tabId;
 const violationsListEl = document.getElementById('violations-list');
 const violationDetailsEl = document.getElementById('violation-details');
 const summaryTextEl = document.getElementById('summary-text');
-const summaryCountsEl = document.getElementById('summary-counts');
 const scanBtn = document.getElementById('scan-btn');
 
 const scanViewEl = document.getElementById('scan-view');
@@ -55,20 +54,24 @@ function escapeHtml(str) {
   return div.innerHTML;
 }
 
-// axe-core's failureSummary looks like:
-// "Fix any of the following:\n  Message one\n  Message two"
-// (or "Fix all of the following:" for "all"/"none" checks).
-// We drop that leading label and turn each remaining line into a bullet.
-function parseFailureSummary(summary) {
-  if (!summary) return [];
-  const lines = summary.split('\n').map((line) => line.trim()).filter(Boolean);
-  if (!lines.length) return [];
+// Lightweight syntax highlighting for an HTML snippet (already escapeHtml'd),
+// similar in spirit to axe's own element preview: tag names, attribute names,
+// and quoted attribute values each get their own color.
+function highlightHtmlSnippet(rawHtml) {
+  const escaped = escapeHtml(rawHtml);
 
-  // First line is typically the "Fix any/all of the following:" label
-  const isLabelLine = /^Fix (any|all) of the following:?$/i.test(lines[0]);
-  const items = isLabelLine ? lines.slice(1) : lines;
-
-  return items.filter(Boolean);
+  // Matches an opening or closing tag: &lt;/?tagname ...attrs.../?&gt;
+  return escaped.replace(
+    /(&lt;\/?)([a-zA-Z][a-zA-Z0-9-]*)((?:\s+[^&]*?)?)(\/?&gt;)/g,
+    (whole, open, tagName, attrsPart, close) => {
+      const highlightedAttrs = attrsPart.replace(
+        /([a-zA-Z_:][-a-zA-Z0-9_:.]*)(=)(&quot;.*?&quot;|&#39;.*?&#39;)/g,
+        (m, attrName, eq, attrValue) =>
+          `<span class="tok-attr">${attrName}</span><span class="tok-punct">${eq}</span><span class="tok-string">${attrValue}</span>`
+      );
+      return `<span class="tok-punct">${open}</span><span class="tok-tag">${tagName}</span>${highlightedAttrs}<span class="tok-punct">${close}</span>`;
+    }
+  );
 }
 
 function renderViolationsList() {
@@ -136,18 +139,13 @@ function renderViolationDetails(violation) {
   const impact = violation.impact || 'minor';
   const nodesHtml = (violation.nodes || [])
     .map((node, i) => {
-      const target = Array.isArray(node.target) ? node.target.join(', ') : String(node.target || '');
       const nodeKey = nodeKeyFor(violation, i);
       const isHighlighted = highlightedNodeKey === nodeKey;
-      const fixItems = parseFailureSummary(node.failureSummary);
-      const fixListHtml = fixItems.length
-        ? `<ul class="fix-list">${fixItems.map((item) => `<li>${escapeHtml(item)}</li>`).join('')}</ul>`
-        : '';
+      const htmlSnippet = node.html || '';
 
       return `
         <div class="node-card${isHighlighted ? ' is-highlighted' : ''}" data-node-index="${i}">
-          <span class="node-card-target">${escapeHtml(target)}</span>
-          ${fixListHtml}
+          <pre class="node-card-html"><code>${highlightHtmlSnippet(htmlSnippet)}</code></pre>
           <div class="node-card-actions">
             <button type="button" class="node-action-btn node-action-target${isHighlighted ? ' is-active' : ''}" data-action="target" data-node-index="${i}" title="Highlight the element on the page">
               ${ICON_TARGET}
@@ -297,9 +295,13 @@ function highlightElementInPage(selectors) {
         position: fixed;
         pointer-events: none;
         border: 2px solid #d93025;
-        background: rgba(217, 48, 37, 0.15);
-        box-shadow: 0 0 0 4px rgba(217, 48, 37, 0.25);
         border-radius: 2px;
+        /* Stacked shadows fading outward simulate a soft glow around the
+           border, without any solid fill covering the element itself. */
+        box-shadow:
+          0 0 0 2px rgba(217, 48, 37, 0.35),
+          0 0 6px 4px rgba(217, 48, 37, 0.22),
+          0 0 14px 8px rgba(217, 48, 37, 0.10);
         z-index: 2147483647; /* max value, sits above any local stacking context */
         transition: all 80ms ease-out;
       }
@@ -344,29 +346,8 @@ function clearHighlightInPage() {
   }
 }
 
-function renderSummaryCounts() {
-  if (!currentViolations.length) {
-    summaryCountsEl.innerHTML = '';
-    return;
-  }
-
-  const counts = { critical: 0, serious: 0, moderate: 0, minor: 0 };
-  currentViolations.forEach((v) => {
-    const impact = v.impact || 'minor';
-    if (impact in counts) counts[impact]++;
-  });
-
-  const total = currentViolations.length;
-
-  const pills = Object.keys(IMPACT_ORDER)
-    .filter((impact) => counts[impact] > 0)
-    .map((impact) => `<span class="count-pill count-outline count-${impact}">${counts[impact]} ${escapeHtml(impact)}</span>`)
-    .join('');
-
-  summaryCountsEl.innerHTML = `
-    <span class="count-pill count-total">${total} total</span>
-    ${pills}
-  `;
+function countTotalIssues() {
+  return currentViolations.reduce((sum, v) => sum + (v.nodes?.length || 0), 0);
 }
 
 function setSummary(text) {
@@ -381,7 +362,6 @@ function setScanning(isScanning) {
 async function runAxeAudit() {
   setScanning(true);
   setSummary('Scanning…');
-  summaryCountsEl.innerHTML = '';
 
   try {
     // 1. Inject axe-core using the correct path
@@ -418,18 +398,16 @@ async function runAxeAudit() {
 
     renderViolationsList();
     renderViolationDetails(null);
-    renderSummaryCounts();
 
-    const count = currentViolations.length;
-    setSummary(count === 0
-      ? 'No violations found'
-      : `${count} violation${count > 1 ? 's' : ''} found`);
+    const totalIssues = countTotalIssues();
+    setSummary(totalIssues === 0
+      ? 'No issues found'
+      : `${totalIssues} issue${totalIssues > 1 ? 's' : ''} found`);
 
   } catch (error) {
     console.error('Unable to run axe-core:', error);
     setSummary('Error while scanning. See console.');
     violationsListEl.innerHTML = `<div class="empty-state">Error: ${escapeHtml(error.message)}</div>`;
-    summaryCountsEl.innerHTML = '';
   } finally {
     setScanning(false);
   }

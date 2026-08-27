@@ -18,6 +18,11 @@
 
   --active-selection: #e8f0fe;
   --active-selection-text: #1967d2;
+
+  /* HTML snippet syntax highlighting (node-card-html) */
+  --html-tag-color: #9c27b0;
+  --html-attr-color: #c8590c;
+  --html-string-color: #1a73e8;
 }
 
 /* Thème sombre automatique si le navigateur/DevTools est en dark mode */
@@ -32,6 +37,9 @@
     --active-selection-text: #8ab4f8;
     --color-critical: #f1f3f4;
     /* near-white so "black" still reads as max-contrast in dark mode */
+    --html-tag-color: #d691e1;
+    --html-attr-color: #f4b876;
+    --html-string-color: #8ab4f8;
   }
 }
 
@@ -45,6 +53,9 @@ html.theme-light {
   --active-selection: #e8f0fe;
   --active-selection-text: #1967d2;
   --color-critical: #000000;
+  --html-tag-color: #9c27b0;
+  --html-attr-color: #c8590c;
+  --html-string-color: #1a73e8;
 }
 
 html.theme-dark {
@@ -56,6 +67,9 @@ html.theme-dark {
   --active-selection: #3c4043;
   --active-selection-text: #8ab4f8;
   --color-critical: #f1f3f4;
+  --html-tag-color: #d691e1;
+  --html-attr-color: #f4b876;
+  --html-string-color: #8ab4f8;
 }
 
 * {
@@ -177,61 +191,9 @@ body {
   color: var(--text-secondary);
 }
 
-/* Récap du nombre de problèmes par sévérité, dans la toolbar */
-.summary-counts {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.summary-counts:empty {
-  display: none;
-}
-
-/* Pushes everything after it (the settings gear) to the toolbar's right edge,
-   regardless of whether .summary-counts has content. */
+/* Pushes the settings gear to the toolbar's right edge */
 .toolbar-spacer {
   flex: 1;
-}
-
-.count-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 10px;
-  font-weight: 600;
-  padding: 2px 8px;
-  border-radius: 10px;
-  white-space: nowrap;
-}
-
-/* "Total" pill: solid fill, most prominent */
-.count-pill.count-total {
-  color: #ffffff;
-  background-color: var(--text-primary);
-  font-weight: 700;
-}
-
-/* Per-severity pills: "hollow" style — colored text on a neutral background */
-.count-pill.count-outline {
-  background-color: var(--toolbar-bg);
-  border: 1px solid var(--border-color);
-}
-
-.count-pill.count-critical {
-  color: var(--color-critical);
-}
-
-.count-pill.count-serious {
-  color: var(--color-serious);
-}
-
-.count-pill.count-moderate {
-  color: var(--color-moderate);
-}
-
-.count-pill.count-minor {
-  color: var(--color-minor);
 }
 
 /* Structural Layout */
@@ -349,23 +311,38 @@ html.theme-light .badge-critical {
   box-shadow: inset 0 0 0 1px var(--color-highlight);
 }
 
-.node-card-target {
+.node-card-html {
   display: block;
+  margin: 0;
+  padding: 8px;
+  background-color: var(--bg-color);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
-.fix-list {
-  margin: 6px 0 0 0;
-  padding-left: 16px;
-  font-family: var(--font-family);
+.node-card-html code {
+  font-family: inherit;
+  color: var(--text-primary);
+}
+
+.node-card-html .tok-tag {
+  color: var(--html-tag-color);
+  font-weight: 600;
+}
+
+.node-card-html .tok-attr {
+  color: var(--html-attr-color);
+}
+
+.node-card-html .tok-string {
+  color: var(--html-string-color);
+}
+
+.node-card-html .tok-punct {
   color: var(--text-secondary);
-}
-
-.fix-list li {
-  margin-bottom: 2px;
-}
-
-.fix-list li:last-child {
-  margin-bottom: 0;
 }
 
 .node-card-actions {
@@ -515,20 +492,6 @@ html.theme-light .badge-critical {
   pointer-events: none;
 }
 
-.select-wrap-with-help {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.select-wrap-with-help select {
-  flex: 1;
-}
-
-.select-wrap-with-help.select-wrap::after {
-  right: 44px;
-}
-
 .radio-row {
   display: flex;
   gap: 20px;
@@ -548,22 +511,4 @@ html.theme-light .badge-critical {
   height: 15px;
   accent-color: var(--active-selection-text);
   cursor: pointer;
-}
-
-.help-btn {
-  flex-shrink: 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  border: none;
-  background-color: var(--text-primary);
-  color: var(--bg-color);
-  font-size: 10px;
-  font-weight: 700;
-  line-height: 1;
-  cursor: help;
-  padding: 0;
 }

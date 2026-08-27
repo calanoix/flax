@@ -1,19 +1,19 @@
 # flAx a11y
 
-A lightweight, privacy-first, and bloat-free Chrome DevTools extension for web accessibility testing. Powered by the open-source `axe-core` engine.
+A deshittified, debloated, streamlined Axe DevTools alternative. It runs `axe-core`, then gives you the results. That's it.
 
-## Features
-- **Fast & Minimalist:** Zero tracking, zero upsells, zero AI bloat.
-- **Native DevTools Integration:** Runs directly inside your browser's Developer Tools.
-- **Powered by `axe-core`:** Accurate WCAG 2.1 / 2.2 detection.
+## Philosophy
+- **Simple UI:** Everything in its right place. Two-column layout, mute colors, dark/light theme.
+- **Minimal features:** No AI bloat. No required (or optional) login. No guided tests. No little golden locks everywhere.
+- **Expert-friendly:** When you see the issue, you already know what causes it and how to fix it.
 
-## Development Setup
-
+## Installation
 1. Clone this repository.
-2. Run `npm install` to set up dependencies.
-3. Open Chrome / Chromium and navigate to `chrome://extensions/`.
+2. Run `npm install` in the `flax-a11y` directory to set up dependencies.
+3. Open Chrome/Chromium/Brave and navigate to `chrome://extensions/`.
 4. Enable **Developer mode** (top right).
 5. Click **Load unpacked** and select the `src/` directory.
 
 ---
 *Disclaimer: This project is independently developed and is not affiliated with, sponsored by, or endorsed by Deque Systems.*
+*Disclosure: The code of this extension was mosty written by Claude AI, though I personally reviewed every single line.*

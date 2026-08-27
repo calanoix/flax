@@ -17,7 +17,6 @@
       </button>
       <div class="divider"></div>
       <div class="summary" id="summary-text">Ready to scan</div>
-      <div class="summary-counts" id="summary-counts"></div>
       <div class="toolbar-spacer"></div>
       <button id="settings-btn" class="btn btn-icon-only" title="Settings" aria-label="Settings">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -81,11 +80,7 @@
 
         <div class="settings-subcard">
           <div class="settings-field settings-field-inline">
-            <label>
-              Best Practices
-              <button type="button" class="help-btn"
-                title="Includes axe-core's additional best-practice rules, which are recommendations rather than strict WCAG failures.">?</button>
-            </label>
+            <label>Best Practices</label>
           </div>
 
           <div class="radio-row" role="radiogroup" aria-label="Best Practices">
@@ -101,7 +96,7 @@
 
           <div class="settings-field">
             <label for="wcag-select">Select accessibility standard</label>
-            <div class="select-wrap select-wrap-with-help">
+            <div class="select-wrap">
               <select id="wcag-select">
                 <option value="wcag2a">WCAG 2.0 A</option>
                 <option value="wcag2aa">WCAG 2.0 AA</option>
@@ -110,8 +105,6 @@
                 <option value="wcag21aa">WCAG 2.1 AA (axe Default)</option>
                 <option value="wcag22aa">WCAG 2.2 AA</option>
               </select>
-              <button type="button" class="help-btn"
-                title="Determines which WCAG success-criteria rules axe-core runs. Each level includes all lower levels and versions cumulatively (e.g. WCAG 2.1 AA also runs 2.0 A/AA and 2.1 A rules).">?</button>
             </div>
           </div>
         </div>
