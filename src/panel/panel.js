@@ -11,6 +11,7 @@ const settingsBtn = document.getElementById('settings-btn');
 const settingsBackBtn = document.getElementById('settings-back-btn');
 const versionExtensionEl = document.getElementById('version-extension');
 const versionAxeEl = document.getElementById('version-axe');
+const wcagLevelTextEl = document.getElementById('wcag-level-text');
 const themeSelectEl = document.getElementById('theme-select');
 const wcagSelectEl = document.getElementById('wcag-select');
 const bpEnableEl = document.getElementById('bp-enable');
@@ -34,6 +35,16 @@ const WCAG_TAG_SETS = {
   wcag21a: ['wcag2a', 'wcag21a'],
   wcag21aa: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'],
   wcag22aa: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa']
+};
+
+// Human-readable labels for the toolbar recap, kept in sync with WCAG_TAG_SETS's keys
+const WCAG_STANDARD_LABELS = {
+  wcag2a: 'WCAG 2.0 A',
+  wcag2aa: 'WCAG 2.0 AA',
+  wcag2aaa: 'WCAG 2.0 AAA',
+  wcag21a: 'WCAG 2.1 A',
+  wcag21aa: 'WCAG 2.1 AA',
+  wcag22aa: 'WCAG 2.2 AA'
 };
 
 const DEFAULT_SETTINGS = {
@@ -91,10 +102,14 @@ function renderViolationsList() {
     .map((violation, i) => {
       const impact = violation.impact || 'minor';
       const nodeCount = violation.nodes?.length || 0;
+      const isBestPractice = Array.isArray(violation.tags) && violation.tags.includes('best-practice');
+      const ruleLabel = isBestPractice
+        ? `<span class="best-practice-tag">Best practice</span> ${escapeHtml(violation.help || violation.id)}`
+        : escapeHtml(violation.help || violation.id);
       return `
         <div class="violation-item" data-index="${i}">
           <span class="violation-item-text">
-            ${escapeHtml(violation.help || violation.id)}
+            ${ruleLabel}
             <small style="display:block;color:var(--text-secondary);">
               ${nodeCount} element${nodeCount > 1 ? 's' : ''}
             </small>
@@ -439,6 +454,12 @@ function applySettingsToForm() {
   bpEnableEl.checked = currentSettings.bestPractices;
   bpDisableEl.checked = !currentSettings.bestPractices;
   applyTheme(currentSettings.theme);
+  updateWcagLevelText();
+}
+
+function updateWcagLevelText() {
+  if (!wcagLevelTextEl) return;
+  wcagLevelTextEl.textContent = WCAG_STANDARD_LABELS[currentSettings.wcagStandard] || currentSettings.wcagStandard;
 }
 
 async function loadSettings() {
@@ -492,6 +513,7 @@ themeSelectEl?.addEventListener('change', () => {
 
 wcagSelectEl?.addEventListener('change', () => {
   currentSettings.wcagStandard = wcagSelectEl.value;
+  updateWcagLevelText();
   saveSettings();
 });
 
