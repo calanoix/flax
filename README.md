@@ -16,4 +16,5 @@ A deshittified, debloated, streamlined Axe DevTools alternative. It runs `axe-co
 
 ---
 *Disclaimer: This project is independently developed and is not affiliated with, sponsored by, or endorsed by Deque Systems.*
+
 *Disclosure: The code of this extension was mosty written by Claude AI, though I personally reviewed every single line.*
