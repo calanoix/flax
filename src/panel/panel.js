@@ -1,8 +1,8 @@
 const inspectedTabId = chrome.devtools.inspectedWindow.tabId;
 
-const violationsListEl = document.getElementById('violations-list');
-const violationsListInnerEl = document.getElementById('violations-list-inner');
-const violationDetailsEl = document.getElementById('violation-details');
+const failuresListEl = document.getElementById('failures-list');
+const failuresListInnerEl = document.getElementById('failures-list-inner');
+const failureDetailsEl = document.getElementById('failure-details');
 const summaryTextEl = document.getElementById('summary-text');
 const scanBtn = document.getElementById('scan-btn');
 const mainContainerEl = document.getElementById('main-container');
@@ -22,7 +22,7 @@ const wcagSelectEl = document.getElementById('wcag-select');
 const bpEnableEl = document.getElementById('bp-enable');
 const bpDisableEl = document.getElementById('bp-disable');
 
-let currentViolations = [];
+let currentFailures = [];
 let selectedIndex = null;
 let highlightedNodeKey = null; // identifies the element currently highlighted on the page
 let hasScanned = false; // distinguishes "not yet scanned" from "scanned, zero issues"
@@ -34,7 +34,7 @@ let hasScanned = false; // distinguishes "not yet scanned" from "scanned, zero i
 // measure the sidebar content's real (unclamped) height here and feed it
 // into a CSS variable that the grid-template-rows clamp() consumes.
 //
-// We observe #violations-list-inner (the content wrapper), not #violations-list
+// We observe #failures-list-inner (the content wrapper), not #failures-list
 // (.sidebar) itself: once the stacked grid clamps .sidebar's row to
 // --sidebar-stack-height, .sidebar's own box stops changing size when its
 // content changes — that's the whole point of the clamp — so a
@@ -42,12 +42,12 @@ let hasScanned = false; // distinguishes "not yet scanned" from "scanned, zero i
 // The inner wrapper is never height-constrained, so its natural size always
 // reflects the true content height, scanned or not, filtered or not.
 function updateSidebarStackHeight() {
-  const height = violationsListInnerEl.scrollHeight;
-  violationsListEl.style.setProperty('--sidebar-stack-height', `${height}px`);
+  const height = failuresListInnerEl.scrollHeight;
+  failuresListEl.style.setProperty('--sidebar-stack-height', `${height}px`);
 }
 
 const sidebarResizeObserver = new ResizeObserver(() => updateSidebarStackHeight());
-sidebarResizeObserver.observe(violationsListInnerEl);
+sidebarResizeObserver.observe(failuresListInnerEl);
 
 // Display order for severities (most to least severe)
 const IMPACT_ORDER = { critical: 0, serious: 1, moderate: 2, minor: 3 };
@@ -119,48 +119,48 @@ function highlightHtmlSnippet(rawHtml) {
   );
 }
 
-// Violations actually shown, after applying the best-practices display filter.
+// Failures actually shown, after applying the best-practices display filter.
 // Rendering (and node-index-based click handlers) always operates on this list,
-// never on the raw currentViolations, so indices stay consistent.
-function getVisibleViolations() {
-  if (currentSettings.bestPractices) return currentViolations;
-  return currentViolations.filter(
+// never on the raw currentFailures, so indices stay consistent.
+function getVisibleFailures() {
+  if (currentSettings.bestPractices) return currentFailures;
+  return currentFailures.filter(
     (v) => !(Array.isArray(v.tags) && v.tags.includes('best-practice'))
   );
 }
 
-function renderViolationsList() {
-  // Keep currentViolations sorted by severity (most to least severe); this only
+function renderFailuresList() {
+  // Keep currentFailures sorted by severity (most to least severe); this only
   // needs to happen once per scan, but re-sorting here is cheap and keeps this
   // function self-contained regardless of how it's triggered (scan or filter toggle).
-  currentViolations.sort((a, b) => (IMPACT_ORDER[a.impact] ?? 99) - (IMPACT_ORDER[b.impact] ?? 99));
+  currentFailures.sort((a, b) => (IMPACT_ORDER[a.impact] ?? 99) - (IMPACT_ORDER[b.impact] ?? 99));
 
-  const visible = getVisibleViolations();
+  const visible = getVisibleFailures();
 
   if (!hasScanned) {
-    violationsListInnerEl.innerHTML = '<div class="empty-state">Ready to scan</div>';
+    failuresListInnerEl.innerHTML = '<div class="empty-state">Ready to scan</div>';
     updateLayout();
     return;
   }
 
   if (!visible.length) {
-    violationsListInnerEl.innerHTML = '<div class="empty-state">No issues found</div>';
+    failuresListInnerEl.innerHTML = '<div class="empty-state">No issues found</div>';
     updateLayout();
     return;
   }
 
-  violationsListInnerEl.innerHTML = visible
-    .map((violation, i) => {
-      const impact = violation.impact || 'minor';
-      const nodeCount = violation.nodes?.length || 0;
-      const isBestPractice = Array.isArray(violation.tags) && violation.tags.includes('best-practice');
+  failuresListInnerEl.innerHTML = visible
+    .map((failure, i) => {
+      const impact = failure.impact || 'minor';
+      const nodeCount = failure.nodes?.length || 0;
+      const isBestPractice = Array.isArray(failure.tags) && failure.tags.includes('best-practice');
       const bestPracticeTag = isBestPractice ? '<span class="best-practice-tag">Best practice</span>' : '';
       return `
-        <div class="violation-item" data-index="${i}">
+        <div class="failure-item" data-index="${i}">
           <span class="badge badge-${impact}">${escapeHtml(impact)}</span>
-          <span class="violation-item-text">
+          <span class="failure-item-text">
             ${bestPracticeTag}
-            ${escapeHtml(violation.help || violation.id)}
+            ${escapeHtml(failure.help || failure.id)}
             <small style="display:block;color:var(--text-secondary);">
               ${nodeCount} element${nodeCount > 1 ? 's' : ''}
             </small>
@@ -170,10 +170,10 @@ function renderViolationsList() {
     })
     .join('');
 
-  violationsListEl.querySelectorAll('.violation-item').forEach((el) => {
+  failuresListEl.querySelectorAll('.failure-item').forEach((el) => {
     el.addEventListener('click', () => {
       const index = Number(el.dataset.index);
-      selectViolation(index);
+      selectFailure(index);
     });
   });
 
@@ -182,18 +182,18 @@ function renderViolationsList() {
 // issues) and the two-column state (at least one visible issue), and shows
 // or hides the secondary results toolbar accordingly.
 function updateLayout() {
-  const visible = getVisibleViolations();
+  const visible = getVisibleFailures();
   const showTwoColumns = hasScanned && visible.length > 0;
 
   mainContainerEl.classList.toggle('is-single-column', !showTwoColumns);
-  violationDetailsEl.classList.toggle('is-hidden', !showTwoColumns);
+  failureDetailsEl.classList.toggle('is-hidden', !showTwoColumns);
   resultsToolbarEl.classList.toggle('is-hidden', !hasScanned);
 }
 
-function selectViolation(index) {
+function selectFailure(index) {
   selectedIndex = index;
 
-  violationsListEl.querySelectorAll('.violation-item').forEach((el) => {
+  failuresListEl.querySelectorAll('.failure-item').forEach((el) => {
     el.classList.toggle('selected', Number(el.dataset.index) === index);
   });
 
@@ -203,19 +203,19 @@ function selectViolation(index) {
     highlightedNodeKey = null;
   }
 
-  const violation = getVisibleViolations()[index];
-  renderViolationDetails(violation);
+  const failure = getVisibleFailures()[index];
+  renderFailureDetails(failure);
 }
 
-function renderViolationDetails(violation) {
-  if (!violation) {
-    violationDetailsEl.innerHTML = '<div class="empty-state">Select a rule from the list to see details.</div>';
+function renderFailureDetails(failure) {
+  if (!failure) {
+    failureDetailsEl.innerHTML = '<div class="empty-state">Select a rule from the list to see details.</div>';
     return;
   }
 
-  const nodesHtml = (violation.nodes || [])
+  const nodesHtml = (failure.nodes || [])
     .map((node, i) => {
-      const nodeKey = nodeKeyFor(violation, i);
+      const nodeKey = nodeKeyFor(failure, i);
       const isHighlighted = highlightedNodeKey === nodeKey;
       const htmlSnippet = node.html || '';
 
@@ -237,43 +237,43 @@ function renderViolationDetails(violation) {
     })
     .join('');
 
-  violationDetailsEl.innerHTML = `
+  failureDetailsEl.innerHTML = `
     <div class="detail-header">
-      <h2 class="detail-title">${escapeHtml(violation.help)}</h2>
-      <p style="color:var(--text-secondary);margin:8px 0 0 0;">${escapeHtml(violation.description)}</p>
-      ${violation.helpUrl ? `<p style="margin:6px 0 0 0;"><a href="${escapeHtml(violation.helpUrl)}" target="_blank" rel="noopener noreferrer">Learn more</a></p>` : ''}
+      <h2 class="detail-title">${escapeHtml(failure.help)}</h2>
+      <p style="color:var(--text-secondary);margin:8px 0 0 0;">${escapeHtml(failure.description)}</p>
+      ${failure.helpUrl ? `<p style="margin:6px 0 0 0;"><a href="${escapeHtml(failure.helpUrl)}" target="_blank" rel="noopener noreferrer">Learn more</a></p>` : ''}
     </div>
     <div class="node-list">
       ${nodesHtml || '<div class="empty-state">No elements associated.</div>'}
     </div>
   `;
 
-  violationDetailsEl.querySelectorAll('.node-action-target').forEach((btn) => {
+  failureDetailsEl.querySelectorAll('.node-action-target').forEach((btn) => {
     btn.addEventListener('click', (e) => {
       e.stopPropagation();
       const nodeIndex = Number(btn.dataset.nodeIndex);
-      const node = violation.nodes[nodeIndex];
-      toggleHighlight(violation, nodeIndex, node);
+      const node = failure.nodes[nodeIndex];
+      toggleHighlight(failure, nodeIndex, node);
     });
   });
 
-  violationDetailsEl.querySelectorAll('.node-action-code').forEach((btn) => {
+  failureDetailsEl.querySelectorAll('.node-action-code').forEach((btn) => {
     btn.addEventListener('click', (e) => {
       e.stopPropagation();
       const nodeIndex = Number(btn.dataset.nodeIndex);
-      const node = violation.nodes[nodeIndex];
+      const node = failure.nodes[nodeIndex];
       openInElementsPanel(node);
     });
   });
 }
 
 // Builds a stable key identifying a specific node (rule + index)
-function nodeKeyFor(violation, nodeIndex) {
-  return `${violation.id}::${nodeIndex}`;
+function nodeKeyFor(failure, nodeIndex) {
+  return `${failure.id}::${nodeIndex}`;
 }
 
-async function toggleHighlight(violation, nodeIndex, node) {
-  const nodeKey = nodeKeyFor(violation, nodeIndex);
+async function toggleHighlight(failure, nodeIndex, node) {
+  const nodeKey = nodeKeyFor(failure, nodeIndex);
   const target = Array.isArray(node.target) ? node.target : [node.target];
   const turningOn = highlightedNodeKey !== nodeKey;
 
@@ -296,7 +296,7 @@ async function toggleHighlight(violation, nodeIndex, node) {
   }
 
   // Update the visual state of the relevant card and button
-  violationDetailsEl.querySelectorAll('.node-card').forEach((cardEl) => {
+  failureDetailsEl.querySelectorAll('.node-card').forEach((cardEl) => {
     const isThisOne = Number(cardEl.dataset.nodeIndex) === nodeIndex;
     const isActive = isThisOne && turningOn;
     cardEl.classList.toggle('is-highlighted', isActive);
@@ -422,7 +422,7 @@ function clearHighlightInPage() {
 }
 
 function countTotalIssues() {
-  return getVisibleViolations().reduce((sum, v) => sum + (v.nodes?.length || 0), 0);
+  return getVisibleFailures().reduce((sum, v) => sum + (v.nodes?.length || 0), 0);
 }
 
 function setSummary(text) {
@@ -434,7 +434,7 @@ function setScanning(isScanning) {
   scanBtn.classList.toggle('is-loading', isScanning);
 }
 
-async function runAxeAudit() {
+async function runAxeScan() {
   setScanning(true);
   setSummary('Scanning…');
   resultsToolbarEl.classList.add('is-hidden');
@@ -466,15 +466,15 @@ async function runAxeAudit() {
     });
 
     const axeResults = results[0].result;
-    console.log('Audit results:', axeResults);
+    console.log('Scan results:', axeResults);
 
-    currentViolations = axeResults.violations || [];
+    currentFailures = axeResults.violations || [];
     selectedIndex = null;
     highlightedNodeKey = null;
     hasScanned = true;
 
-    renderViolationsList();
-    renderViolationDetails(null);
+    renderFailuresList();
+    renderFailureDetails(null);
 
     const totalIssues = countTotalIssues();
     setSummary(totalIssues === 0
@@ -486,8 +486,8 @@ async function runAxeAudit() {
     setSummary('Error while scanning. See console.');
     resultsToolbarEl.classList.add('is-hidden');
     mainContainerEl.classList.add('is-single-column');
-    violationDetailsEl.classList.add('is-hidden');
-    violationsListInnerEl.innerHTML = `<div class="empty-state">Error: ${escapeHtml(error.message)}</div>`;
+    failureDetailsEl.classList.add('is-hidden');
+    failuresListInnerEl.innerHTML = `<div class="empty-state">Error: ${escapeHtml(error.message)}</div>`;
   } finally {
     setScanning(false);
   }
@@ -506,23 +506,23 @@ function csvField(value) {
   return str;
 }
 
-function exportViolationsAsCsv() {
-  const visible = getVisibleViolations();
+function exportFailuresAsCsv() {
+  const visible = getVisibleFailures();
 
   const header = ['Impact', 'Rule ID', 'Rule', 'Description', 'Best Practice', 'Element HTML', 'Selector'];
   const rows = [header];
 
-  visible.forEach((violation) => {
-    const isBestPractice = Array.isArray(violation.tags) && violation.tags.includes('best-practice');
-    const nodes = violation.nodes && violation.nodes.length ? violation.nodes : [null];
+  visible.forEach((failure) => {
+    const isBestPractice = Array.isArray(failure.tags) && failure.tags.includes('best-practice');
+    const nodes = failure.nodes && failure.nodes.length ? failure.nodes : [null];
 
     nodes.forEach((node) => {
       const target = node ? (Array.isArray(node.target) ? node.target : [node.target]) : [];
       rows.push([
-        violation.impact || '',
-        violation.id || '',
-        violation.help || '',
-        violation.description || '',
+        failure.impact || '',
+        failure.id || '',
+        failure.help || '',
+        failure.description || '',
         isBestPractice ? 'Yes' : 'No',
         node?.html || '',
         target.join(' > ')
@@ -548,7 +548,7 @@ function exportViolationsAsCsv() {
 
 function buildAxeRunOptions() {
   // Best-practice rules are always included in the scan itself; whether they're
-  // shown afterwards is purely a display filter (see getVisibleViolations/currentSettings.bestPractices).
+  // shown afterwards is purely a display filter (see getVisibleFailures/currentSettings.bestPractices).
   const tags = [
     ...(WCAG_TAG_SETS[currentSettings.wcagStandard] || WCAG_TAG_SETS.wcag21aa),
     'best-practice'
@@ -599,9 +599,9 @@ function setBestPracticesVisible(visible) {
     clearPageHighlight().catch((e) => console.error(e));
     highlightedNodeKey = null;
   }
-  renderViolationDetails(null);
+  renderFailureDetails(null);
 
-  renderViolationsList();
+  renderFailuresList();
   const totalIssues = countTotalIssues();
   if (hasScanned) {
     setSummary(totalIssues === 0
@@ -624,7 +624,7 @@ async function loadSettings() {
     currentSettings = { ...DEFAULT_SETTINGS };
   }
   applySettingsToForm();
-  renderViolationsList();
+  renderFailuresList();
 }
 
 async function saveSettings() {
@@ -681,9 +681,9 @@ bpToggleBtn?.addEventListener('click', () => {
   setBestPracticesVisible(!currentSettings.bestPractices);
 });
 
-exportCsvBtn?.addEventListener('click', exportViolationsAsCsv);
+exportCsvBtn?.addEventListener('click', exportFailuresAsCsv);
 
 populateVersions();
 loadSettings();
 
-scanBtn?.addEventListener('click', runAxeAudit);
+scanBtn?.addEventListener('click', runAxeScan);

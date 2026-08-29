@@ -210,7 +210,7 @@ body {
 }
 
 
-.violation-item-text {
+.failure-item-text {
   flex: 1;
   padding-right: 8px;
 }
@@ -271,7 +271,7 @@ body {
    (see the @container rule below). Block display (not display: contents)
    is required here: JS reads this element's own scrollHeight, which needs
    it to have a real box. It doesn't change visual layout since .sidebar's
-   children (.violation-item, .empty-state) stack the same way either way. */
+   children (.failure-item, .empty-state) stack the same way either way. */
 .sidebar-content {
   display: block;
 }
@@ -335,7 +335,7 @@ body {
 }
 
 /* Liste des éléments (Sidebar) */
-.violation-item {
+.failure-item {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -345,11 +345,11 @@ body {
   cursor: pointer;
 }
 
-.violation-item:hover {
+.failure-item:hover {
   background-color: var(--toolbar-bg);
 }
 
-.violation-item.selected {
+.failure-item.selected {
   background-color: var(--active-selection);
   color: var(--active-selection-text);
 }
