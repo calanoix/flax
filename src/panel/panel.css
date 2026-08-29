@@ -183,6 +183,32 @@ body {
   cursor: default;
 }
 
+/* Secondary toolbar (results summary, best-practices toggle, CSV export) */
+.toolbar-secondary {
+  height: 30px;
+  background-color: var(--bg-color);
+}
+
+.toolbar-secondary.is-hidden {
+  display: none;
+}
+
+.btn-toggle {
+  background-color: transparent;
+  border-color: var(--border-color);
+  color: var(--text-secondary);
+}
+
+.btn-toggle:hover {
+  color: var(--text-primary);
+}
+
+.btn-toggle[aria-pressed="true"] {
+  background-color: var(--active-selection);
+  border-color: var(--active-selection);
+  color: var(--active-selection-text);
+}
+
 
 .violation-item-text {
   flex: 1;
@@ -240,20 +266,51 @@ body {
   overflow-y: auto;
 }
 
+/* Purely structural wrapper around .sidebar's list content — lets JS measure
+   the content's true, unclamped height for the responsive stacked layout
+   (see the @container rule below). Block display (not display: contents)
+   is required here: JS reads this element's own scrollHeight, which needs
+   it to have a real box. It doesn't change visual layout since .sidebar's
+   children (.violation-item, .empty-state) stack the same way either way. */
+.sidebar-content {
+  display: block;
+}
+
 .details-panel {
   width: 60%;
   padding: 12px;
   overflow-y: auto;
 }
 
+/* Single-column mode: before scanning, or once scanned with zero issues.
+   The sidebar (repurposed to show the "Ready to scan" / "No issues found"
+   message) takes the full width and the details panel is hidden entirely. */
+.container.is-single-column .sidebar {
+  width: 100%;
+  border-right: none;
+}
+
+.container.is-single-column .details-panel {
+  display: none;
+}
+
 /* Below 350px, side-by-side columns become too cramped: stack instead.
    The top pane (sidebar) can take up to 50% of the height but shrinks to
-   fit its content when the list is short, so the bottom pane (details)
-   grows to fill the freed-up space instead of leaving it empty. */
+   fit its content when the list is short.
+
+   Pure CSS (min-content on a scrollable flex/grid item) can't reliably
+   measure "the sidebar's real content height" once overflow-y: auto is
+   involved — browsers disagree on what min-content means for a scroll
+   container, which is what caused the height to misbehave before any
+   selection was made, when the last rule was selected, and with longer
+   (best-practices-inclusive) lists. --sidebar-stack-height is instead
+   fed by a ResizeObserver in panel.js, which measures .sidebar's actual
+   scrollHeight directly; clamp() here just enforces the 50% ceiling and
+   a sane floor so the details pane never fully collapses. */
 @container panel-view (max-width: 350px) {
   .container {
     display: grid;
-    grid-template-rows: minmax(0, min(min-content, 50%)) 1fr;
+    grid-template-rows: clamp(0px, var(--sidebar-stack-height, min-content), 50%) 1fr;
   }
 
   .sidebar {

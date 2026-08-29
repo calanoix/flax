@@ -17,8 +17,6 @@
       </button>
       <div class="divider"></div>
       <div class="summary" id="wcag-level-text">WCAG 2.1 AA</div>
-      <div class="divider"></div>
-      <div class="summary" id="summary-text">Ready to scan</div>
       <div class="toolbar-spacer"></div>
       <button id="settings-btn" class="btn btn-icon-only">
         <span class="visually-hidden">Settings</span>
@@ -31,15 +29,35 @@
       </button>
     </header>
 
-    <!-- Main two-column area -->
-    <main class="container">
+    <!-- Secondary toolbar: only shown once at least one issue is found -->
+    <header class="toolbar toolbar-secondary is-hidden" id="results-toolbar">
+      <div class="summary" id="summary-text">Ready to scan</div>
+      <div class="toolbar-spacer"></div>
+      <button id="bp-toggle-btn" class="btn btn-toggle" aria-pressed="true">
+        Best practices
+      </button>
+      <button id="export-csv-btn" class="btn btn-icon-only" title="Export as CSV">
+        <span class="visually-hidden">Export as CSV</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+          <polyline points="7 10 12 15 17 10" />
+          <line x1="12" y1="15" x2="12" y2="3" />
+        </svg>
+      </button>
+    </header>
+
+    <!-- Main content area: single column before/without results, two columns once issues are found -->
+    <main class="container" id="main-container">
       <!-- Left column: failed rules list -->
       <section aria-label="Failed rules" class="sidebar" id="violations-list">
-        <div class="empty-state">Click "Scan page" to start the audit.</div>
+        <div class="sidebar-content" id="violations-list-inner">
+          <div class="empty-state">Click "Scan page" to start the audit.</div>
+        </div>
       </section>
 
       <!-- Right column: details of the selected rule -->
-      <section aria-label="Issues of selected rule" class="details-panel" id="violation-details">
+      <section aria-label="Issues of selected rule" class="details-panel is-hidden" id="violation-details">
         <div class="empty-state">Select a rule from the list to see details.</div>
       </section>
     </main>

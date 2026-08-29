@@ -1,9 +1,14 @@
 const inspectedTabId = chrome.devtools.inspectedWindow.tabId;
 
 const violationsListEl = document.getElementById('violations-list');
+const violationsListInnerEl = document.getElementById('violations-list-inner');
 const violationDetailsEl = document.getElementById('violation-details');
 const summaryTextEl = document.getElementById('summary-text');
 const scanBtn = document.getElementById('scan-btn');
+const mainContainerEl = document.getElementById('main-container');
+const resultsToolbarEl = document.getElementById('results-toolbar');
+const bpToggleBtn = document.getElementById('bp-toggle-btn');
+const exportCsvBtn = document.getElementById('export-csv-btn');
 
 const scanViewEl = document.getElementById('scan-view');
 const settingsViewEl = document.getElementById('settings-view');
@@ -20,6 +25,29 @@ const bpDisableEl = document.getElementById('bp-disable');
 let currentViolations = [];
 let selectedIndex = null;
 let highlightedNodeKey = null; // identifies the element currently highlighted on the page
+let hasScanned = false; // distinguishes "not yet scanned" from "scanned, zero issues"
+
+// --- Responsive stacked layout (<350px): sidebar height measurement ---
+// See the comment above the @container rule in panel.css for why this can't
+// be pure CSS: .sidebar has overflow-y: auto, and browsers don't agree on
+// what min-content means for a scrollable flex/grid item. Instead, we
+// measure the sidebar content's real (unclamped) height here and feed it
+// into a CSS variable that the grid-template-rows clamp() consumes.
+//
+// We observe #violations-list-inner (the content wrapper), not #violations-list
+// (.sidebar) itself: once the stacked grid clamps .sidebar's row to
+// --sidebar-stack-height, .sidebar's own box stops changing size when its
+// content changes — that's the whole point of the clamp — so a
+// ResizeObserver on .sidebar would go silent right when we need it most.
+// The inner wrapper is never height-constrained, so its natural size always
+// reflects the true content height, scanned or not, filtered or not.
+function updateSidebarStackHeight() {
+  const height = violationsListInnerEl.scrollHeight;
+  violationsListEl.style.setProperty('--sidebar-stack-height', `${height}px`);
+}
+
+const sidebarResizeObserver = new ResizeObserver(() => updateSidebarStackHeight());
+sidebarResizeObserver.observe(violationsListInnerEl);
 
 // Display order for severities (most to least severe)
 const IMPACT_ORDER = { critical: 0, serious: 1, moderate: 2, minor: 3 };
@@ -85,20 +113,37 @@ function highlightHtmlSnippet(rawHtml) {
   );
 }
 
+// Violations actually shown, after applying the best-practices display filter.
+// Rendering (and node-index-based click handlers) always operates on this list,
+// never on the raw currentViolations, so indices stay consistent.
+function getVisibleViolations() {
+  if (currentSettings.bestPractices) return currentViolations;
+  return currentViolations.filter(
+    (v) => !(Array.isArray(v.tags) && v.tags.includes('best-practice'))
+  );
+}
+
 function renderViolationsList() {
-  if (!currentViolations.length) {
-    violationsListEl.innerHTML = '<div class="empty-state">Click "Scan page" to start the audit.</div>';
+  // Keep currentViolations sorted by severity (most to least severe); this only
+  // needs to happen once per scan, but re-sorting here is cheap and keeps this
+  // function self-contained regardless of how it's triggered (scan or filter toggle).
+  currentViolations.sort((a, b) => (IMPACT_ORDER[a.impact] ?? 99) - (IMPACT_ORDER[b.impact] ?? 99));
+
+  const visible = getVisibleViolations();
+
+  if (!hasScanned) {
+    violationsListInnerEl.innerHTML = '<div class="empty-state">Ready to scan</div>';
+    updateLayout();
     return;
   }
 
-  const sorted = [...currentViolations].sort(
-    (a, b) => (IMPACT_ORDER[a.impact] ?? 99) - (IMPACT_ORDER[b.impact] ?? 99)
-  );
+  if (!visible.length) {
+    violationsListInnerEl.innerHTML = '<div class="empty-state">No issues found</div>';
+    updateLayout();
+    return;
+  }
 
-  // Re-assign so the indices used in rendering match click handlers
-  currentViolations = sorted;
-
-  violationsListEl.innerHTML = sorted
+  violationsListInnerEl.innerHTML = visible
     .map((violation, i) => {
       const impact = violation.impact || 'minor';
       const nodeCount = violation.nodes?.length || 0;
@@ -125,6 +170,18 @@ function renderViolationsList() {
       selectViolation(index);
     });
   });
+
+  updateLayout();
+}
+// issues) and the two-column state (at least one visible issue), and shows
+// or hides the secondary results toolbar accordingly.
+function updateLayout() {
+  const visible = getVisibleViolations();
+  const showTwoColumns = hasScanned && visible.length > 0;
+
+  mainContainerEl.classList.toggle('is-single-column', !showTwoColumns);
+  violationDetailsEl.classList.toggle('is-hidden', !showTwoColumns);
+  resultsToolbarEl.classList.toggle('is-hidden', !hasScanned);
 }
 
 function selectViolation(index) {
@@ -140,7 +197,7 @@ function selectViolation(index) {
     highlightedNodeKey = null;
   }
 
-  const violation = currentViolations[index];
+  const violation = getVisibleViolations()[index];
   renderViolationDetails(violation);
 }
 
@@ -359,7 +416,7 @@ function clearHighlightInPage() {
 }
 
 function countTotalIssues() {
-  return currentViolations.reduce((sum, v) => sum + (v.nodes?.length || 0), 0);
+  return getVisibleViolations().reduce((sum, v) => sum + (v.nodes?.length || 0), 0);
 }
 
 function setSummary(text) {
@@ -374,6 +431,7 @@ function setScanning(isScanning) {
 async function runAxeAudit() {
   setScanning(true);
   setSummary('Scanning…');
+  resultsToolbarEl.classList.add('is-hidden');
 
   try {
     // 1. Inject axe-core using the correct path
@@ -407,6 +465,7 @@ async function runAxeAudit() {
     currentViolations = axeResults.violations || [];
     selectedIndex = null;
     highlightedNodeKey = null;
+    hasScanned = true;
 
     renderViolationsList();
     renderViolationDetails(null);
@@ -419,19 +478,75 @@ async function runAxeAudit() {
   } catch (error) {
     console.error('Unable to run axe-core:', error);
     setSummary('Error while scanning. See console.');
-    violationsListEl.innerHTML = `<div class="empty-state">Error: ${escapeHtml(error.message)}</div>`;
+    resultsToolbarEl.classList.add('is-hidden');
+    mainContainerEl.classList.add('is-single-column');
+    violationDetailsEl.classList.add('is-hidden');
+    violationsListInnerEl.innerHTML = `<div class="empty-state">Error: ${escapeHtml(error.message)}</div>`;
   } finally {
     setScanning(false);
   }
 }
 
+// ===================== CSV export =====================
+
+// Wraps a value for safe inclusion in a CSV field (RFC 4180-style):
+// doubles internal quotes and wraps in quotes whenever the value contains
+// a comma, quote, or line break.
+function csvField(value) {
+  const str = String(value ?? '');
+  if (/[",\n\r]/.test(str)) {
+    return `"${str.replace(/"/g, '""')}"`;
+  }
+  return str;
+}
+
+function exportViolationsAsCsv() {
+  const visible = getVisibleViolations();
+
+  const header = ['Impact', 'Rule ID', 'Rule', 'Description', 'Best Practice', 'Element HTML', 'Selector'];
+  const rows = [header];
+
+  visible.forEach((violation) => {
+    const isBestPractice = Array.isArray(violation.tags) && violation.tags.includes('best-practice');
+    const nodes = violation.nodes && violation.nodes.length ? violation.nodes : [null];
+
+    nodes.forEach((node) => {
+      const target = node ? (Array.isArray(node.target) ? node.target : [node.target]) : [];
+      rows.push([
+        violation.impact || '',
+        violation.id || '',
+        violation.help || '',
+        violation.description || '',
+        isBestPractice ? 'Yes' : 'No',
+        node?.html || '',
+        target.join(' > ')
+      ]);
+    });
+  });
+
+  const csvContent = rows.map((row) => row.map(csvField).join(',')).join('\r\n');
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+
+  const link = document.createElement('a');
+  link.href = url;
+  const timestamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
+  link.download = `flax-a11y-report-${timestamp}.csv`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
 // ===================== Settings =====================
 
 function buildAxeRunOptions() {
-  const tags = [...(WCAG_TAG_SETS[currentSettings.wcagStandard] || WCAG_TAG_SETS.wcag21aa)];
-  if (currentSettings.bestPractices) {
-    tags.push('best-practice');
-  }
+  // Best-practice rules are always included in the scan itself; whether they're
+  // shown afterwards is purely a display filter (see getVisibleViolations/currentSettings.bestPractices).
+  const tags = [
+    ...(WCAG_TAG_SETS[currentSettings.wcagStandard] || WCAG_TAG_SETS.wcag21aa),
+    'best-practice'
+  ];
   return { runOnly: { type: 'tag', values: tags } };
 }
 
@@ -452,6 +567,41 @@ function applySettingsToForm() {
   bpDisableEl.checked = !currentSettings.bestPractices;
   applyTheme(currentSettings.theme);
   updateWcagLevelText();
+  updateBpToggleButton();
+}
+
+// Keeps the secondary toolbar's toggle button in sync with currentSettings.bestPractices,
+// which is the single source of truth shared with the Settings radio buttons.
+function updateBpToggleButton() {
+  if (!bpToggleBtn) return;
+  bpToggleBtn.setAttribute('aria-pressed', String(currentSettings.bestPractices));
+}
+
+// Applies a new bestPractices display-filter value from either toggle
+// (Settings radios or the secondary toolbar button), keeping both in sync.
+function setBestPracticesVisible(visible) {
+  currentSettings.bestPractices = visible;
+  bpEnableEl.checked = visible;
+  bpDisableEl.checked = !visible;
+  updateBpToggleButton();
+  saveSettings();
+
+  // The visible list is being re-filtered, so any previous selection/highlight
+  // index may no longer point to the same rule — reset both to stay consistent.
+  selectedIndex = null;
+  if (highlightedNodeKey) {
+    clearPageHighlight().catch((e) => console.error(e));
+    highlightedNodeKey = null;
+  }
+  renderViolationDetails(null);
+
+  renderViolationsList();
+  const totalIssues = countTotalIssues();
+  if (hasScanned) {
+    setSummary(totalIssues === 0
+      ? 'No issues found'
+      : `${totalIssues} issue${totalIssues > 1 ? 's' : ''} found`);
+  }
 }
 
 function updateWcagLevelText() {
@@ -468,6 +618,7 @@ async function loadSettings() {
     currentSettings = { ...DEFAULT_SETTINGS };
   }
   applySettingsToForm();
+  renderViolationsList();
 }
 
 async function saveSettings() {
@@ -516,10 +667,15 @@ wcagSelectEl?.addEventListener('change', () => {
 
 [bpEnableEl, bpDisableEl].forEach((radio) => {
   radio?.addEventListener('change', () => {
-    currentSettings.bestPractices = bpEnableEl.checked;
-    saveSettings();
+    setBestPracticesVisible(bpEnableEl.checked);
   });
 });
+
+bpToggleBtn?.addEventListener('click', () => {
+  setBestPracticesVisible(!currentSettings.bestPractices);
+});
+
+exportCsvBtn?.addEventListener('click', exportViolationsAsCsv);
 
 populateVersions();
 loadSettings();
