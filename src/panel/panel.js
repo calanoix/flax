@@ -62,7 +62,10 @@ const WCAG_TAG_SETS = {
   wcag2aaa: ['wcag2a', 'wcag2aa', 'wcag2aaa'],
   wcag21a: ['wcag2a', 'wcag21a'],
   wcag21aa: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'],
-  wcag22aa: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa']
+  wcag21aaa: ['wcag2a', 'wcag2aa', 'wcag2aaa', 'wcag21a', 'wcag21aa'],
+  wcag22a: ['wcag2a', 'wcag21a', 'wcag22a'],
+  wcag22aa: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22a', 'wcag22aa'],
+  wcag22aaa: ['wcag2a', 'wcag2aa', 'wcag2aaa', 'wcag21a', 'wcag21aa', 'wcag22a', 'wcag22aa']
 };
 
 // Human-readable labels for the toolbar recap, kept in sync with WCAG_TAG_SETS's keys
@@ -72,7 +75,10 @@ const WCAG_STANDARD_LABELS = {
   wcag2aaa: 'WCAG 2.0 AAA',
   wcag21a: 'WCAG 2.1 A',
   wcag21aa: 'WCAG 2.1 AA',
-  wcag22aa: 'WCAG 2.2 AA'
+  wcag21aaa: 'WCAG 2.1 AAA',
+  wcag22a: 'WCAG 2.2 A',
+  wcag22aa: 'WCAG 2.2 AA',
+  wcag22aaa: 'WCAG 2.2 AAA'
 };
 
 const DEFAULT_SETTINGS = {
