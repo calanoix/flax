@@ -10,7 +10,7 @@ A deshittified, debloated, streamlined Axe DevTools alternative. It runs `axe-co
 ## Installation
 1. Clone this repository.
 2. Run `npm install` in the `flax-a11y` directory to set up dependencies.
-3. Open Chrome/Brave/Edge/Chromium and navigate to `chrome://extensions/`.
+3. Open Chrome/Brave/Edge/Chromium and navigate to `chrome://extensions/`, `brave://extensions/` or `edge://extensions/`.
 4. Enable **Developer mode** (top right).
 5. Click **Load unpacked** and select the `src/` directory.
 
