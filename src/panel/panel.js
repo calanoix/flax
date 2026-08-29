@@ -103,18 +103,17 @@ function renderViolationsList() {
       const impact = violation.impact || 'minor';
       const nodeCount = violation.nodes?.length || 0;
       const isBestPractice = Array.isArray(violation.tags) && violation.tags.includes('best-practice');
-      const ruleLabel = isBestPractice
-        ? `<span class="best-practice-tag">Best practice</span> ${escapeHtml(violation.help || violation.id)}`
-        : escapeHtml(violation.help || violation.id);
+      const bestPracticeTag = isBestPractice ? '<span class="best-practice-tag">Best practice</span>' : '';
       return `
         <div class="violation-item" data-index="${i}">
+          <span class="badge badge-${impact}">${escapeHtml(impact)}</span>
           <span class="violation-item-text">
-            ${ruleLabel}
+            ${bestPracticeTag}
+            ${escapeHtml(violation.help || violation.id)}
             <small style="display:block;color:var(--text-secondary);">
               ${nodeCount} element${nodeCount > 1 ? 's' : ''}
             </small>
           </span>
-          <span class="badge badge-${impact}">${escapeHtml(impact)}</span>
         </div>
       `;
     })
@@ -151,7 +150,6 @@ function renderViolationDetails(violation) {
     return;
   }
 
-  const impact = violation.impact || 'minor';
   const nodesHtml = (violation.nodes || [])
     .map((node, i) => {
       const nodeKey = nodeKeyFor(violation, i);
@@ -179,7 +177,6 @@ function renderViolationDetails(violation) {
   violationDetailsEl.innerHTML = `
     <div class="detail-header">
       <h2 class="detail-title">${escapeHtml(violation.help)}</h2>
-      <span class="badge badge-${impact}">${escapeHtml(impact)}</span>
       <p style="color:var(--text-secondary);margin:8px 0 0 0;">${escapeHtml(violation.description)}</p>
       ${violation.helpUrl ? `<p style="margin:6px 0 0 0;"><a href="${escapeHtml(violation.helpUrl)}" target="_blank" rel="noopener noreferrer">Learn more</a></p>` : ''}
     </div>

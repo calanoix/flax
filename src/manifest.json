@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "flAx a11y",
+  "name": "flAx",
   "version": "0.1.0",
-  "description": "Inspecteur d'accessibilité épuré basé sur axe-core",
+  "description": "axe-core-based accessibility inspector",
   "devtools_page": "devtools.html",
   "permissions": [
     "activeTab",

@@ -1,8 +1,8 @@
 chrome.devtools.panels.create(
-  "flAx a11y",
+  "flAx",
   "",
   "panel/panel.html",
   (panel) => {
-    // Initialisation du panneau
+    // Panel initialization
   }
 );

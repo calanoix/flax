@@ -13,14 +13,15 @@
     <!-- Top toolbar / header -->
     <header class="toolbar">
       <button id="scan-btn" class="btn btn-primary">
-        <span class="btn-icon">▶</span> Scan page
+        <span aria-hidden="true" class="btn-icon">▶</span> Scan page
       </button>
       <div class="divider"></div>
       <div class="summary" id="wcag-level-text">WCAG 2.1 AA</div>
       <div class="divider"></div>
       <div class="summary" id="summary-text">Ready to scan</div>
       <div class="toolbar-spacer"></div>
-      <button id="settings-btn" class="btn btn-icon-only" title="Settings" aria-label="Settings">
+      <button id="settings-btn" class="btn btn-icon-only">
+        <span class="visually-hidden">Settings</span>
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
           stroke-linecap="round" stroke-linejoin="round">
           <circle cx="12" cy="12" r="3" />
@@ -32,13 +33,13 @@
 
     <!-- Main two-column area -->
     <main class="container">
-      <!-- Left column: violations list -->
-      <section class="sidebar" id="violations-list">
+      <!-- Left column: failed rules list -->
+      <section aria-label="Failed rules" class="sidebar" id="violations-list">
         <div class="empty-state">Click "Scan page" to start the audit.</div>
       </section>
 
-      <!-- Right column: details of the selected issue -->
-      <section class="details-panel" id="violation-details">
+      <!-- Right column: details of the selected rule -->
+      <section aria-label="Issues of selected rule" class="details-panel" id="violation-details">
         <div class="empty-state">Select a rule from the list to see details.</div>
       </section>
     </main>
@@ -47,7 +48,8 @@
   <!-- ===================== Settings view ===================== -->
   <div id="settings-view" class="view is-hidden">
     <header class="toolbar toolbar-settings">
-      <button id="settings-back-btn" class="btn btn-icon-only" title="Back" aria-label="Back">
+      <button id="settings-back-btn" class="btn btn-icon-only">
+        <span class="visually-hidden">Back to scan view</span>
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
           stroke-linecap="round" stroke-linejoin="round">
           <line x1="19" y1="12" x2="5" y2="12" />
@@ -61,8 +63,8 @@
       </div>
     </header>
 
-    <main class="settings-content">
-      <section class="settings-card">
+    <div class="settings-content">
+      <div class="settings-card">
         <h2 class="settings-card-title">Appearance</h2>
 
         <div class="settings-field">
@@ -75,9 +77,9 @@
             </select>
           </div>
         </div>
-      </section>
+      </div>
 
-      <section class="settings-card">
+      <div class="settings-card">
         <h2 class="settings-card-title">Rules and Issues</h2>
 
         <div class="settings-subcard">
@@ -86,14 +88,10 @@
           </div>
 
           <div class="radio-row" role="radiogroup" aria-label="Best Practices">
-            <label class="radio-option">
-              <input type="radio" name="best-practices" value="enable" id="bp-enable">
-              Enable
-            </label>
-            <label class="radio-option">
-              <input type="radio" name="best-practices" value="disable" id="bp-disable">
-              Disable
-            </label>
+            <input type="radio" name="best-practices" value="enable" id="bp-enable">
+            <label for="bp-enable" class="radio-option">Enable</label>
+            <input type="radio" name="best-practices" value="disable" id="bp-disable">
+            <label for="bp-disable" class="radio-option">Disable</label>
           </div>
 
           <div class="settings-field">
@@ -110,8 +108,8 @@
             </div>
           </div>
         </div>
-      </section>
-    </main>
+      </div>
+    </div>
   </div>
 
   <script src="panel.js"></script>

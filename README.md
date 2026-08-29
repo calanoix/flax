@@ -1,4 +1,4 @@
-# flAx a11y
+# flAx
 
 A deshittified, debloated, streamlined Axe DevTools alternative. It runs `axe-core`, then gives you the results. That's it.
 
@@ -17,4 +17,4 @@ A deshittified, debloated, streamlined Axe DevTools alternative. It runs `axe-co
 ---
 *Disclaimer: This project is independently developed and is not affiliated with, sponsored by, or endorsed by Deque Systems.*
 
-*Disclosure: The code of this extension was mosty written by Claude AI, though I personally reviewed every single line.*
+*Disclosure: The code of this extension was mosty written by Claude AI, though I personally reviewed every single line (because of course it was not accessible by default).*

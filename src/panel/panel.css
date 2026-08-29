@@ -1,4 +1,17 @@
-/* Style épuré et natif inspiré des Chrome DevTools */
+.visually-hidden,
+.visually-hidden-focusable:not(:focus, :focus-within) {
+  border: 0 !important;
+  clip-path: inset(50%) !important;
+  /* 2 */
+  height: 1px !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  padding: 0 !important;
+  width: 1px !important;
+  white-space: nowrap !important;
+  /* 3 */
+}
+
 :root {
   --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   --bg-color: var(--sys-color-cdt-base-fallback, #ffffff);
@@ -85,13 +98,14 @@ body {
   color: var(--text-primary);
   height: 100vh;
   overflow: hidden;
-  user-select: none;
 }
 
 .view {
   display: flex;
   flex-direction: column;
   height: 100vh;
+  container-type: inline-size;
+  container-name: panel-view;
 }
 
 .view.is-hidden {
@@ -121,6 +135,7 @@ body {
   border: 1px solid transparent;
   cursor: pointer;
   flex-shrink: 0;
+  user-select: none;
 }
 
 /* Icon-only buttons (settings gear, back arrow, ...) — declared after .btn
@@ -200,8 +215,10 @@ body {
   background-color: var(--border-color);
 }
 
-.summary {
+.summary,
+#wcag-level-text {
   font-size: 11px;
+  font-weight: 400;
   color: var(--text-secondary);
 }
 
@@ -229,6 +246,30 @@ body {
   overflow-y: auto;
 }
 
+/* Below 350px, side-by-side columns become too cramped: stack instead.
+   The top pane (sidebar) can take up to 50% of the height but shrinks to
+   fit its content when the list is short, so the bottom pane (details)
+   grows to fill the freed-up space instead of leaving it empty. */
+@container panel-view (max-width: 350px) {
+  .container {
+    display: grid;
+    grid-template-rows: minmax(0, min(min-content, 50%)) 1fr;
+  }
+
+  .sidebar {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .details-panel {
+    width: 100%;
+    min-height: 0;
+    box-shadow: 0 -4px 8px -2px rgba(0, 0, 0, 0.15);
+    position: relative;
+  }
+}
+
 .empty-state {
   padding: 16px;
   color: var(--text-secondary);
@@ -239,8 +280,9 @@ body {
 /* Liste des éléments (Sidebar) */
 .violation-item {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
   padding: 8px 10px;
   border-bottom: 1px solid var(--border-color);
   cursor: pointer;
@@ -510,6 +552,13 @@ html.theme-light .badge-critical {
   display: flex;
   gap: 20px;
   margin-bottom: 14px;
+}
+
+@container panel-view (max-width: 350px) {
+  .radio-row {
+    flex-direction: column;
+    gap: 10px;
+  }
 }
 
 .radio-option {
