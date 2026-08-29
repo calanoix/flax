@@ -623,6 +623,9 @@ html.theme-light .badge-critical {
   align-items: center;
   gap: 6px;
   font-size: 12px;
+}
+
+.radio-option label {
   cursor: pointer;
 }
 
