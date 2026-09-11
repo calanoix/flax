@@ -14,45 +14,52 @@
 
 :root {
   --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+
   --bg-color: var(--sys-color-cdt-base-fallback, #ffffff);
   --toolbar-bg: var(--sys-color-neutral-container, #f1f3f4);
   --border-color: #e0e0e0;
+  --accent-color: #3E47FF;
+  --accent-bg: #EAEEFF;
   --text-primary: #202124;
   --text-secondary: #5f6368;
-
-  /* WCAG severity colors */
   --color-critical: #000000;
-  --color-serious: #e65100;
-  --color-moderate: #f29900;
+  --color-serious: #CB4800;
+  --color-moderate: #F29900;
   --color-minor: #1a73e8;
-
-  /* Accent used for the on-page highlight / active action state (kept separate from severity colors) */
-  --color-highlight: #d93025;
-
-  --active-selection: #e8f0fe;
-  --active-selection-text: #1967d2;
-
-  /* HTML snippet syntax highlighting (node-card-html) */
+  --highlight: #d93025;
+  --selection-bg: #F1F3F4;
+  --text-tag: #FFFFFF;
+  --text-tag-critical: #FFFFFF;
+  --text-tag-moderate: #202124;
   --html-tag-color: #9c27b0;
   --html-attr-color: #c8590c;
   --html-string-color: #1a73e8;
+  --link-color: #1967D2;
 }
 
 /* Thème sombre automatique si le navigateur/DevTools est en dark mode */
 @media (prefers-color-scheme: dark) {
   :root {
     --bg-color: #202124;
-    --toolbar-bg: #292a2d;
-    --border-color: #3c4043;
-    --text-primary: #e8eaed;
-    --text-secondary: #9aa0a6;
-    --active-selection: #3c4043;
-    --active-selection-text: #8ab4f8;
-    --color-critical: #f1f3f4;
-    /* near-white so "black" still reads as max-contrast in dark mode */
-    --html-tag-color: #d691e1;
-    --html-attr-color: #f4b876;
-    --html-string-color: #8ab4f8;
+    --toolbar-bg: #292A2D;
+    --border-color: #3C4043;
+    --accent-color: #3E47FF;
+    --accent-bg: #EAEEFF;
+    --text-primary: #E8EAED;
+    --text-secondary: #9AA0A6;
+    --color-critical: #F1F3F4;
+    --color-serious: #CB4800;
+    --color-moderate: #F29900;
+    --color-minor: #1a73e8;
+    --highlight: #F14034;
+    --selection-bg: #292A2D;
+    --text-tag: #FFFFFF;
+    --text-tag-critical: #000000;
+    --text-tag-moderate: #202124;
+    --html-tag-color: #D691E1;
+    --html-attr-color: #c8590c;
+    --html-string-color: #1a73e8;
+    --link-color: #8AB4FB;
   }
 }
 
@@ -61,28 +68,46 @@ html.theme-light {
   --bg-color: #ffffff;
   --toolbar-bg: #f1f3f4;
   --border-color: #e0e0e0;
+  --accent-color: #3E47FF;
+  --accent-bg: #EAEEFF;
   --text-primary: #202124;
   --text-secondary: #5f6368;
-  --active-selection: #e8f0fe;
-  --active-selection-text: #1967d2;
   --color-critical: #000000;
+  --color-serious: #CB4800;
+  --color-moderate: #F29900;
+  --color-minor: #1a73e8;
+  --highlight: #d93025;
+  --selection-bg: #F1F3F4;
+  --text-tag: #FFFFFF;
+  --text-tag-critical: #FFFFFF;
+  --text-tag-moderate: #202124;
   --html-tag-color: #9c27b0;
   --html-attr-color: #c8590c;
   --html-string-color: #1a73e8;
+  --link-color: #1967D2;
 }
 
 html.theme-dark {
   --bg-color: #202124;
-  --toolbar-bg: #292a2d;
-  --border-color: #3c4043;
-  --text-primary: #e8eaed;
-  --text-secondary: #9aa0a6;
-  --active-selection: #3c4043;
-  --active-selection-text: #8ab4f8;
-  --color-critical: #f1f3f4;
-  --html-tag-color: #d691e1;
-  --html-attr-color: #f4b876;
-  --html-string-color: #8ab4f8;
+  --toolbar-bg: #292A2D;
+  --border-color: #3C4043;
+  --accent-color: #3E47FF;
+  --accent-bg: #EAEEFF;
+  --text-primary: #E8EAED;
+  --text-secondary: #9AA0A6;
+  --color-critical: #F1F3F4;
+  --color-serious: #CB4800;
+  --color-moderate: #F29900;
+  --color-minor: #1a73e8;
+  --highlight: #F14034;
+  --selection-bg: #292A2D;
+  --text-tag: #FFFFFF;
+  --text-tag-critical: #000000;
+  --text-tag-moderate: #202124;
+  --html-tag-color: #D691E1;
+  --html-attr-color: #c8590c;
+  --html-string-color: #1a73e8;
+  --link-color: #8AB4FB;
 }
 
 * {
@@ -169,12 +194,12 @@ body {
 }
 
 .btn-primary {
-  background-color: #1a73e8;
+  background-color: var(--accent-color);
   color: #ffffff;
 }
 
 .btn-primary:hover {
-  background-color: #1557b0;
+  background-color: #5860fb;
 }
 
 .btn-primary:disabled,
@@ -350,8 +375,7 @@ body {
 }
 
 .failure-item.selected {
-  background-color: var(--active-selection);
-  color: var(--active-selection-text);
+  background-color: var(--selection-bg);
 }
 
 .badge {
@@ -360,26 +384,12 @@ body {
   padding: 2px 6px;
   border-radius: 10px;
   text-transform: uppercase;
-  color: white;
+  color: var(--text-tag);
 }
 
 .badge-critical {
   background-color: var(--color-critical);
-  color: #ffffff;
-}
-
-@media (prefers-color-scheme: dark) {
-  .badge-critical {
-    color: #202124;
-  }
-}
-
-html.theme-dark .badge-critical {
-  color: #202124;
-}
-
-html.theme-light .badge-critical {
-  color: #ffffff;
+  color: var(--text-tag-critical);
 }
 
 .badge-serious {
@@ -388,6 +398,7 @@ html.theme-light .badge-critical {
 
 .badge-moderate {
   background-color: var(--color-moderate);
+  color: var(--text-tag-moderate);
 }
 
 .badge-minor {
@@ -419,9 +430,9 @@ html.theme-light .badge-critical {
 }
 
 .node-card.is-highlighted {
-  border-color: var(--color-highlight);
-  background: color-mix(in srgb, var(--color-highlight) 12%, var(--toolbar-bg));
-  box-shadow: inset 0 0 0 1px var(--color-highlight);
+  border-color: var(--highlight);
+  background: color-mix(in srgb, var(--highlight) 12%, var(--toolbar-bg));
+  box-shadow: inset 0 0 0 1px var(--highlight);
 }
 
 .node-card-html {
@@ -482,8 +493,7 @@ html.theme-light .badge-critical {
 }
 
 .node-action-btn:hover {
-  border-color: var(--active-selection-text);
-  color: var(--active-selection-text);
+  border-color: var(--selection-bg);
 }
 
 .node-action-btn svg {
@@ -493,8 +503,8 @@ html.theme-light .badge-critical {
 }
 
 .node-action-btn.is-active {
-  border-color: var(--color-highlight);
-  background-color: var(--color-highlight);
+  border-color: var(--highlight);
+  background-color: var(--highlight);
   color: #ffffff;
 }
 
@@ -519,7 +529,6 @@ html.theme-light .badge-critical {
 }
 
 .settings-versions strong {
-  color: var(--active-selection-text);
   font-weight: 600;
 }
 
@@ -632,6 +641,5 @@ html.theme-light .badge-critical {
 .radio-option input[type="radio"] {
   width: 15px;
   height: 15px;
-  accent-color: var(--active-selection-text);
   cursor: pointer;
 }

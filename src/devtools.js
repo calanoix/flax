@@ -1,5 +1,5 @@
 chrome.devtools.panels.create(
-  "flAx",
+  "flax",
   "",
   "panel/panel.html",
   (panel) => {
