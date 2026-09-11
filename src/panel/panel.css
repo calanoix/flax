@@ -260,7 +260,7 @@ body {
 
 .detail-title a,
 .detail-header a {
-  color: var(--active-selection-text);
+  color: var(--link-color);
   font-size: 11px;
 }
 
