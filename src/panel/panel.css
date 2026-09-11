@@ -20,6 +20,7 @@
   --border-color: #e0e0e0;
   --accent-color: #3E47FF;
   --accent-bg: #EAEEFF;
+  --accent-hover: #5860fb;
   --text-primary: #202124;
   --text-secondary: #5f6368;
   --color-critical: #000000;
@@ -43,8 +44,9 @@
     --bg-color: #202124;
     --toolbar-bg: #292A2D;
     --border-color: #3C4043;
-    --accent-color: #3E47FF;
-    --accent-bg: #EAEEFF;
+    --accent-color: #EAEEFF;
+    --accent-bg: #3E47FF;
+    --accent-hover: #c5d0ff;
     --text-primary: #E8EAED;
     --text-secondary: #9AA0A6;
     --color-critical: #F1F3F4;
@@ -70,6 +72,7 @@ html.theme-light {
   --border-color: #e0e0e0;
   --accent-color: #3E47FF;
   --accent-bg: #EAEEFF;
+  --accent-hover: #5860fb;
   --text-primary: #202124;
   --text-secondary: #5f6368;
   --color-critical: #000000;
@@ -91,8 +94,9 @@ html.theme-dark {
   --bg-color: #202124;
   --toolbar-bg: #292A2D;
   --border-color: #3C4043;
-  --accent-color: #3E47FF;
-  --accent-bg: #EAEEFF;
+  --accent-color: #EAEEFF;
+  --accent-bg: #3E47FF;
+  --accent-hover: #c5d0ff;
   --text-primary: #E8EAED;
   --text-secondary: #9AA0A6;
   --color-critical: #F1F3F4;
@@ -195,11 +199,11 @@ body {
 
 .btn-primary {
   background-color: var(--accent-color);
-  color: #ffffff;
+  color: var(--accent-bg);
 }
 
 .btn-primary:hover {
-  background-color: #5860fb;
+  background-color: var(--accent-hover);
 }
 
 .btn-primary:disabled,
@@ -247,8 +251,8 @@ body {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.3px;
-  color: var(--active-selection-text);
-  background-color: var(--active-selection);
+  color: var(--accent-color);
+  background-color: var(--accent-bg);
   border-radius: 3px;
   padding: 1px 5px;
   margin-bottom: 4px;
@@ -529,6 +533,7 @@ body {
 }
 
 .settings-versions strong {
+  color: var(--accent-color);
   font-weight: 600;
 }
 
@@ -642,4 +647,5 @@ body {
   width: 15px;
   height: 15px;
   cursor: pointer;
+  accent-color: var(--accent-color);
 }
