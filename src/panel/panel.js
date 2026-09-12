@@ -3,10 +3,10 @@ const inspectedTabId = chrome.devtools.inspectedWindow.tabId;
 const failuresListEl = document.getElementById('failures-list');
 const failuresListInnerEl = document.getElementById('failures-list-inner');
 const failureDetailsEl = document.getElementById('failure-details');
-const summaryTextEl = document.getElementById('summary-text');
+const summaryCountTextEl = document.getElementById('summary-count-text');
+const summaryWcagTextEl = document.getElementById('summary-wcag-text');
 const scanBtn = document.getElementById('scan-btn');
 const mainContainerEl = document.getElementById('main-container');
-const resultsToolbarEl = document.getElementById('results-toolbar');
 const bpToggleBtn = document.getElementById('bp-toggle-btn');
 const exportCsvBtn = document.getElementById('export-csv-btn');
 
@@ -16,7 +16,6 @@ const settingsBtn = document.getElementById('settings-btn');
 const settingsBackBtn = document.getElementById('settings-back-btn');
 const versionExtensionEl = document.getElementById('version-extension');
 const versionAxeEl = document.getElementById('version-axe');
-const wcagLevelTextEl = document.getElementById('wcag-level-text');
 const themeSelectEl = document.getElementById('theme-select');
 const wcagSelectEl = document.getElementById('wcag-select');
 const bpEnableEl = document.getElementById('bp-enable');
@@ -144,7 +143,10 @@ function renderFailuresList() {
   }
 
   if (!visible.length) {
-    failuresListInnerEl.innerHTML = '<div class="empty-state">No issues found</div>';
+    const hiddenCount = currentFailures.length - visible.length;
+    failuresListInnerEl.innerHTML = hiddenCount > 0
+      ? `<div class="empty-state">${hiddenCount} issue${hiddenCount > 1 ? 's' : ''} hidden: turn on Best practices to show</div>`
+      : '<div class="empty-state">No issues found! 🎉</div>';
     updateLayout();
     return;
   }
@@ -179,15 +181,15 @@ function renderFailuresList() {
 
   updateLayout();
 }
-// issues) and the two-column state (at least one visible issue), and shows
-// or hides the secondary results toolbar accordingly.
+// issues) and the two-column state (at least one visible issue). The results
+// bar (Scan, Best practices, summary) is always visible, before and after
+// scanning, so it needs no show/hide handling here.
 function updateLayout() {
   const visible = getVisibleFailures();
   const showTwoColumns = hasScanned && visible.length > 0;
 
   mainContainerEl.classList.toggle('is-single-column', !showTwoColumns);
   failureDetailsEl.classList.toggle('is-hidden', !showTwoColumns);
-  resultsToolbarEl.classList.toggle('is-hidden', !hasScanned);
 }
 
 function selectFailure(index) {
@@ -425,8 +427,20 @@ function countTotalIssues() {
   return getVisibleFailures().reduce((sum, v) => sum + (v.nodes?.length || 0), 0);
 }
 
-function setSummary(text) {
-  summaryTextEl.textContent = text;
+// Builds the "X issues" / "0 issue" summary count text from the current
+// visible failures. Shared by the post-scan and post-filter-toggle paths.
+function buildIssueCountText() {
+  const totalIssues = countTotalIssues();
+  return `${totalIssues} issue${totalIssues > 1 ? 's' : ''}`;
+}
+
+// Updates the "X issues | WCAG ..." summary. The count segment (weight 400)
+// and the "| WCAG ..." segment (weight 300) are separate spans so panel.css
+// can style each independently; the separator lives with the WCAG segment
+// since it always renders, while the count segment is empty pre-scan.
+function setSummary(countText) {
+  summaryCountTextEl.textContent = countText || '';
+  updateWcagLevelText();
 }
 
 function setScanning(isScanning) {
@@ -437,7 +451,6 @@ function setScanning(isScanning) {
 async function runAxeScan() {
   setScanning(true);
   setSummary('Scanning…');
-  resultsToolbarEl.classList.add('is-hidden');
 
   try {
     // 1. Inject axe-core using the correct path
@@ -476,15 +489,11 @@ async function runAxeScan() {
     renderFailuresList();
     renderFailureDetails(null);
 
-    const totalIssues = countTotalIssues();
-    setSummary(totalIssues === 0
-      ? 'No issues found'
-      : `${totalIssues} issue${totalIssues > 1 ? 's' : ''} found`);
+    setSummary(buildIssueCountText());
 
   } catch (error) {
     console.error('Unable to run axe-core:', error);
     setSummary('Error while scanning. See console.');
-    resultsToolbarEl.classList.add('is-hidden');
     mainContainerEl.classList.add('is-single-column');
     failureDetailsEl.classList.add('is-hidden');
     failuresListInnerEl.innerHTML = `<div class="empty-state">Error: ${escapeHtml(error.message)}</div>`;
@@ -592,27 +601,40 @@ function setBestPracticesVisible(visible) {
   updateBpToggleButton();
   saveSettings();
 
-  // The visible list is being re-filtered, so any previous selection/highlight
-  // index may no longer point to the same rule — reset both to stay consistent.
-  selectedIndex = null;
-  if (highlightedNodeKey) {
-    clearPageHighlight().catch((e) => console.error(e));
-    highlightedNodeKey = null;
-  }
-  renderFailureDetails(null);
+  // A non-best-practice rule stays visible in both filter states, so if one
+  // is currently selected, keep it selected after re-filtering by looking it
+  // up by id rather than by its (filter-dependent) index. Only reset when the
+  // previously selected rule was itself a best-practice rule now being hidden.
+  const previouslySelected = selectedIndex !== null ? getVisibleFailures()[selectedIndex] : null;
 
   renderFailuresList();
-  const totalIssues = countTotalIssues();
+
+  const newVisible = getVisibleFailures();
+  const restoredIndex = previouslySelected
+    ? newVisible.findIndex((f) => f.id === previouslySelected.id)
+    : -1;
+
+  if (restoredIndex !== -1) {
+    selectFailure(restoredIndex);
+  } else {
+    selectedIndex = null;
+    if (highlightedNodeKey) {
+      clearPageHighlight().catch((e) => console.error(e));
+      highlightedNodeKey = null;
+    }
+    renderFailureDetails(null);
+  }
+
   if (hasScanned) {
-    setSummary(totalIssues === 0
-      ? 'No issues found'
-      : `${totalIssues} issue${totalIssues > 1 ? 's' : ''} found`);
+    setSummary(buildIssueCountText());
   }
 }
 
 function updateWcagLevelText() {
-  if (!wcagLevelTextEl) return;
-  wcagLevelTextEl.textContent = WCAG_STANDARD_LABELS[currentSettings.wcagStandard] || currentSettings.wcagStandard;
+  if (!summaryWcagTextEl) return;
+  const label = WCAG_STANDARD_LABELS[currentSettings.wcagStandard] || currentSettings.wcagStandard;
+  const hasCountText = summaryCountTextEl.textContent.trim().length > 0;
+  summaryWcagTextEl.textContent = hasCountText ? `| ${label}` : label;
 }
 
 async function loadSettings() {

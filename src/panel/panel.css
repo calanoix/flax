@@ -63,6 +63,31 @@
     --html-string-color: #1a73e8;
     --link-color: #8AB4FB;
   }
+
+  /* Scan button and best-practice tag read better in dark mode with
+     accent-color/accent-bg swapped from their normal roles — the variables
+     themselves stay untouched; only which one each component reaches for
+     is flipped here. Scoped to html:not(.theme-light) so a manual "Light"
+     choice still wins over a dark system preference, same as the
+     --accent-* variables above already do via cascade order. Hover states
+     use a slight color-mix tint rather than swapping to the other accent
+     color outright, which read as too abrupt a jump. The Best practices
+     toggle's "active" style (outline in accent-color) is the same in both
+     themes, since --accent-color itself already flips light/dark — see
+     the base .btn-toggle[aria-pressed="true"] rule below. */
+  html:not(.theme-light) .btn-primary {
+    background-color: var(--accent-bg);
+    color: var(--accent-color);
+  }
+
+  html:not(.theme-light) .btn-primary:hover {
+    background-color: color-mix(in srgb, var(--accent-bg) 85%, white);
+  }
+
+  html:not(.theme-light) .best-practice-tag {
+    color: var(--accent-bg);
+    background-color: var(--accent-color);
+  }
 }
 
 /* Manual theme overrides (Settings > Extension theme), win over the system preference either way */
@@ -112,6 +137,23 @@ html.theme-dark {
   --html-attr-color: #c8590c;
   --html-string-color: #1a73e8;
   --link-color: #8AB4FB;
+}
+
+/* Same accent-color/accent-bg swap as the system dark-mode query above,
+   for the manual dark theme override. Hover states use a slight color-mix
+   tint rather than swapping to the other accent color outright. */
+html.theme-dark .btn-primary {
+  background-color: var(--accent-bg);
+  color: var(--accent-color);
+}
+
+html.theme-dark .btn-primary:hover {
+  background-color: color-mix(in srgb, var(--accent-bg) 85%, white);
+}
+
+html.theme-dark .best-practice-tag {
+  color: var(--accent-bg);
+  background-color: var(--accent-color);
 }
 
 * {
@@ -212,18 +254,36 @@ body {
   cursor: default;
 }
 
-/* Secondary toolbar (results summary, best-practices toggle, CSV export) */
-.toolbar-secondary {
-  height: 30px;
-  background-color: var(--bg-color);
+/* Brand header: logo placeholder + extension name + settings gear */
+.toolbar-brand {
+  gap: 8px;
 }
 
-.toolbar-secondary.is-hidden {
-  display: none;
+.logo-placeholder {
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+  border-radius: 6px;
+  background-color: var(--border-color);
+  flex-shrink: 0;
+}
+
+.brand-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* Results bar (Scan control, best-practices toggle, summary, CSV export) —
+   sits directly under .toolbar-brand and is visually distinct from it via
+   the background color, even though both share the .toolbar base class. */
+.toolbar-results {
+  background-color: var(--bg-color);
 }
 
 .btn-toggle {
   background-color: transparent;
+  border-width: 2px;
   border-color: var(--border-color);
   color: var(--text-secondary);
 }
@@ -232,10 +292,31 @@ body {
   color: var(--text-primary);
 }
 
+/* Small dot indicating the toggle's on/off state, shown before the label */
+.btn-toggle-dot {
+  width: 8px;
+  height: 8px;
+  min-width: 8px;
+  border-radius: 50%;
+  border: 1.5px solid currentColor;
+  background-color: transparent;
+  flex-shrink: 0;
+}
+
 .btn-toggle[aria-pressed="true"] {
-  background-color: var(--active-selection);
-  border-color: var(--active-selection);
-  color: var(--active-selection-text);
+  background-color: transparent;
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+}
+
+.btn-toggle[aria-pressed="true"]:hover {
+  background-color: color-mix(in srgb, var(--accent-color) 12%, transparent);
+  border-color: var(--accent-color);
+}
+
+.btn-toggle[aria-pressed="true"] .btn-toggle-dot {
+  background-color: var(--accent-color);
+  border-color: var(--accent-color);
 }
 
 
@@ -270,11 +351,24 @@ body {
   background-color: var(--border-color);
 }
 
-.summary,
-#wcag-level-text {
+.summary {
   font-size: 11px;
-  font-weight: 400;
   color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+/* "X issues" segment: weight 400, spaced from the "| WCAG ..." segment that follows */
+#summary-count-text:not(:empty) {
+  margin-right: 4px;
+}
+
+#summary-count-text {
+  font-weight: 400;
+}
+
+/* "| WCAG ..." segment: weight 300 */
+#summary-wcag-text {
+  font-weight: 300;
 }
 
 /* Pushes the settings gear to the toolbar's right edge */
@@ -358,6 +452,7 @@ body {
 
 .empty-state {
   padding: 16px;
+  font-size: 11px;
   color: var(--text-secondary);
   font-style: italic;
   text-align: center;
@@ -370,6 +465,9 @@ body {
   align-items: flex-start;
   gap: 6px;
   padding: 8px 10px;
+  /* Reserve the accent bar's width on every item so selecting one doesn't
+     shift the others' content horizontally. */
+  border-right: 2px solid transparent;
   border-bottom: 1px solid var(--border-color);
   cursor: pointer;
 }
@@ -380,6 +478,7 @@ body {
 
 .failure-item.selected {
   background-color: var(--selection-bg);
+  border-right-color: var(--accent-color);
 }
 
 .badge {

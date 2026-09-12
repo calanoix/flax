@@ -10,13 +10,10 @@
 
   <!-- ===================== Main scan view ===================== -->
   <div id="scan-view" class="view">
-    <!-- Top toolbar / header -->
-    <header class="toolbar">
-      <button id="scan-btn" class="btn btn-primary">
-        <span aria-hidden="true" class="btn-icon">▶</span> Scan page
-      </button>
-      <div class="divider"></div>
-      <div class="summary" id="wcag-level-text">WCAG 2.1 AA</div>
+    <!-- Top toolbar / header: logo + settings gear -->
+    <header class="toolbar toolbar-brand">
+      <div class="logo-placeholder" aria-hidden="true"></div>
+      <span class="brand-name">flax</span>
       <div class="toolbar-spacer"></div>
       <button id="settings-btn" class="btn btn-icon-only">
         <span class="visually-hidden">Settings</span>
@@ -29,13 +26,19 @@
       </button>
     </header>
 
-    <!-- Secondary toolbar: only shown once at least one issue is found -->
-    <header class="toolbar toolbar-secondary is-hidden" id="results-toolbar">
-      <div class="summary" id="summary-text">Ready to scan</div>
-      <div class="toolbar-spacer"></div>
+    <!-- Results bar: Scan control, Best practices toggle, and summary text -->
+    <header class="toolbar toolbar-results" id="results-toolbar">
+      <button id="scan-btn" class="btn btn-primary">
+        <span aria-hidden="true" class="btn-icon">▶</span> Scan
+      </button>
       <button id="bp-toggle-btn" class="btn btn-toggle" aria-pressed="true">
+        <span class="btn-toggle-dot" aria-hidden="true"></span>
         Best practices
       </button>
+      <div class="toolbar-spacer"></div>
+      <div class="summary" id="summary-text">
+        <span id="summary-count-text"></span><span id="summary-wcag-text">WCAG 2.1 AA</span>
+      </div>
       <button id="export-csv-btn" class="btn btn-icon-only" title="Export as CSV">
         <span class="visually-hidden">Export as CSV</span>
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
