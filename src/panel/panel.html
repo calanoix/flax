@@ -3,6 +3,7 @@
 
 <head>
   <meta charset="utf-8">
+  <title>flax accessibility scanner</title>
   <link rel="stylesheet" href="panel.css">
 </head>
 
@@ -13,9 +14,9 @@
     <!-- Top toolbar / header: logo + settings gear -->
     <header class="toolbar toolbar-brand">
       <div class="logo-placeholder" aria-hidden="true"></div>
-      <span class="brand-name">flax</span>
+      <h1 class="brand-name">flax</h1>
       <div class="toolbar-spacer"></div>
-      <button id="settings-btn" class="btn btn-icon-only">
+      <button id="settings-btn" class="btn btn-icon-only" title="Settings">
         <span class="visually-hidden">Settings</span>
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
           stroke-linecap="round" stroke-linejoin="round">
@@ -69,7 +70,7 @@
   <!-- ===================== Settings view ===================== -->
   <div id="settings-view" class="view is-hidden">
     <header class="toolbar toolbar-settings">
-      <button id="settings-back-btn" class="btn btn-icon-only">
+      <button id="settings-back-btn" class="btn btn-icon-only" title="Back to scan view">
         <span class="visually-hidden">Back to scan view</span>
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
           stroke-linecap="round" stroke-linejoin="round">
