@@ -83,7 +83,7 @@ const WCAG_STANDARD_LABELS = {
 const DEFAULT_SETTINGS = {
   theme: 'system',
   bestPractices: true,
-  wcagStandard: 'wcag21aa'
+  wcagStandard: 'wcag22aa'
 };
 
 let currentSettings = { ...DEFAULT_SETTINGS };
@@ -612,7 +612,7 @@ function buildAxeRunOptions() {
   // Best-practice rules are always included in the scan itself; whether they're
   // shown afterwards is purely a display filter (see getVisibleFailures/currentSettings.bestPractices).
   const tags = [
-    ...(WCAG_TAG_SETS[currentSettings.wcagStandard] || WCAG_TAG_SETS.wcag21aa),
+    ...(WCAG_TAG_SETS[currentSettings.wcagStandard] || WCAG_TAG_SETS.wcag22aa),
     'best-practice'
   ];
   return { runOnly: { type: 'tag', values: tags } };
