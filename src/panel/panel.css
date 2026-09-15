@@ -578,6 +578,20 @@ body {
   margin-top: 8px;
 }
 
+/* Shown only for checks whose axe-core message interpolates concrete
+   data values (hex colors, ARIA attribute names, pixel sizes, ...) —
+   see CHECKS_WITH_DATA_MESSAGE in panel.js. Absent otherwise. */
+.node-data-message {
+  margin: 8px 0 0 0;
+  padding-top: 8px;
+  border-top: 1px solid var(--border-color);
+  font-family: var(--font-family);
+  font-size: 11px;
+  color: var(--text-primary);
+  white-space: normal;
+  word-break: normal;
+}
+
 .node-action-btn {
   display: inline-flex;
   align-items: center;

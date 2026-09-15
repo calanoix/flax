@@ -221,6 +221,8 @@ function renderFailureDetails(failure) {
       const isHighlighted = highlightedNodeKey === nodeKey;
       const htmlSnippet = node.html || '';
 
+      const dataMessageHtml = buildDataMessage(node);
+
       return `
         <div class="node-card${isHighlighted ? ' is-highlighted' : ''}" data-node-index="${i}">
           <pre class="node-card-html"><code>${highlightHtmlSnippet(htmlSnippet)}</code></pre>
@@ -234,6 +236,7 @@ function renderFailureDetails(failure) {
               Inspect
             </button>
           </div>
+          ${dataMessageHtml}
         </div>
       `;
     })
@@ -267,6 +270,56 @@ function renderFailureDetails(failure) {
       openInElementsPanel(node);
     });
   });
+}
+
+// axe-core check IDs whose fail/incomplete message interpolates ${data.X}
+// values (hex colors, ARIA attribute names, pixel sizes, etc.) — i.e. checks
+// whose "message" carries concrete, element-specific values beyond the
+// generic rule description. Identified by inspecting axe-core's own
+// checks metadata (messages.fail / messages.incomplete containing
+// "${data").
+//
+// presentational-role is deliberately excluded even though its own message
+// does interpolate ${data.role}: it's reused as a generic accessible-name
+// fallback check inside many unrelated rules (button-name, image-alt,
+// link-name, ...), so surfacing its message there is misleading — it only
+// belongs to rules actually about presentational role handling.
+const CHECKS_WITH_DATA_MESSAGE = new Set([
+  'color-contrast', 'color-contrast-enhanced', 'link-in-text-block',
+  'target-size', 'target-offset',
+  'aria-allowed-attr', 'aria-unsupported-attr', 'aria-valid-attr',
+  'aria-valid-attr-value', 'aria-required-attr', 'aria-no-deprecated-attr',
+  'aria-prohibited-attr', 'aria-conditional-attr', 'aria-errormessage',
+  'has-global-aria-attribute',
+  'aria-allowed-role', 'abstractrole', 'invalidrole', 'deprecatedrole',
+  'unsupportedrole', 'landmark-is-top-level',
+  'aria-required-children', 'aria-required-parent', 'only-dlitems',
+  'only-listitems',
+  'duplicate-id', 'duplicate-id-active', 'duplicate-id-aria',
+  'avoid-inline-spacing', 'important-letter-spacing', 'important-line-height',
+  'important-word-spacing',
+  'meta-viewport', 'no-implicit-explicit-label'
+]);
+
+// Finds the first sub-check on this node (across any/all/none) whose id is
+// in CHECKS_WITH_DATA_MESSAGE, and returns its axe-generated message —
+// the same string axe already composed with the concrete data values
+// (hex codes, attribute lists, pixel sizes, ...) substituted in.
+function findDataMessage(node) {
+  const subChecks = [
+    ...(node.any || []),
+    ...(node.all || []),
+    ...(node.none || [])
+  ];
+  const match = subChecks.find((check) => CHECKS_WITH_DATA_MESSAGE.has(check.id));
+  return match ? match.message : null;
+}
+
+function buildDataMessage(node) {
+  const message = findDataMessage(node);
+  if (!message) return '';
+
+  return `<p class="node-data-message">${escapeHtml(message)}</p>`;
 }
 
 // Builds a stable key identifying a specific node (rule + index)
