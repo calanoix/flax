@@ -151,26 +151,30 @@ function renderFailuresList() {
     return;
   }
 
-  failuresListInnerEl.innerHTML = visible
+  const failuresMap = visible
     .map((failure, i) => {
       const impact = failure.impact || 'minor';
       const nodeCount = failure.nodes?.length || 0;
       const isBestPractice = Array.isArray(failure.tags) && failure.tags.includes('best-practice');
       const bestPracticeTag = isBestPractice ? '<span class="best-practice-tag">Best practice</span>' : '';
       return `
-        <div class="failure-item" data-index="${i}" tabindex="0">
-          <span class="badge badge-${impact}">${escapeHtml(impact)}</span>
-          <span class="failure-item-text">
-            ${bestPracticeTag}
-            ${escapeHtml(failure.help || failure.id)}
-            <small style="display:block;color:var(--text-secondary);">
-              ${nodeCount} element${nodeCount > 1 ? 's' : ''}
-            </small>
-          </span>
-        </div>
+        <li>
+          <div class="failure-item" data-index="${i}" tabindex="0">
+            <span class="badge badge-${impact}">${escapeHtml(impact)}</span>
+            <span class="failure-item-text">
+              ${bestPracticeTag}
+              ${escapeHtml(failure.help || failure.id)}
+              <small style="display:block;color:var(--text-secondary);">
+                ${nodeCount} element${nodeCount > 1 ? 's' : ''}
+              </small>
+            </span>
+          </div>
+        </li>
       `;
     })
     .join('');
+
+  failuresListInnerEl.innerHTML = `<ul class="issues-list">${failuresMap}</ul>`;
 
   failuresListEl.querySelectorAll('.failure-item').forEach((el) => {
     el.addEventListener('click', () => {
