@@ -1,4 +1,4 @@
-# flAx
+# flax
 
 A deshittified, debloated, streamlined Axe DevTools alternative. It runs `axe-core`, then gives you the results. That's it.
 
