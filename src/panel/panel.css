@@ -36,6 +36,7 @@
   --html-attr-color: #c8590c;
   --html-string-color: #1a73e8;
   --link-color: #1967D2;
+  --focus-color: #000000;
 }
 
 /* Thème sombre automatique si le navigateur/DevTools est en dark mode */
@@ -62,6 +63,7 @@
     --html-attr-color: #c8590c;
     --html-string-color: #1a73e8;
     --link-color: #8AB4FB;
+    --focus-color: #ffffff;
   }
 
   /* Scan button and best-practice tag read better in dark mode with
@@ -113,6 +115,7 @@ html.theme-light {
   --html-attr-color: #c8590c;
   --html-string-color: #1a73e8;
   --link-color: #1967D2;
+  --focus-color: #000000;
 }
 
 html.theme-dark {
@@ -137,6 +140,7 @@ html.theme-dark {
   --html-attr-color: #c8590c;
   --html-string-color: #1a73e8;
   --link-color: #8AB4FB;
+  --focus-color: #ffffff;
 }
 
 /* Same accent-color/accent-bg swap as the system dark-mode query above,
@@ -209,6 +213,23 @@ body {
   user-select: none;
 }
 
+.btn:focus-visible,
+select:focus-visible,
+input:focus-visible,
+button:focus-visible,
+a:focus-visible {
+  outline: none;
+  outline: 0.125rem solid var(--focus-color);
+  outline-offset: 0.125rem;
+}
+
+
+div.failure-item:focus-visible {
+  outline: none;
+  outline: 0.125rem solid var(--focus-color);
+  outline-offset: -0.25rem;
+}
+
 /* Icon-only buttons (settings gear, back arrow, ...) — declared after .btn
    so it correctly overrides the base .btn padding/width regardless of
    selector order elsewhere in the cascade. */
@@ -217,7 +238,6 @@ body {
   min-width: 24px;
   height: 24px;
   padding: 0;
-  justify-content: center;
   border-color: transparent;
   background: transparent;
   color: var(--text-secondary);

@@ -158,7 +158,7 @@ function renderFailuresList() {
       const isBestPractice = Array.isArray(failure.tags) && failure.tags.includes('best-practice');
       const bestPracticeTag = isBestPractice ? '<span class="best-practice-tag">Best practice</span>' : '';
       return `
-        <div class="failure-item" data-index="${i}">
+        <div class="failure-item" data-index="${i}" tabindex="0">
           <span class="badge badge-${impact}">${escapeHtml(impact)}</span>
           <span class="failure-item-text">
             ${bestPracticeTag}
