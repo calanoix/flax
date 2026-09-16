@@ -245,8 +245,8 @@ function renderFailureDetails(failure) {
   failureDetailsEl.innerHTML = `
     <div class="detail-header">
       <h2 class="detail-title">${escapeHtml(failure.help)}</h2>
-      <p style="color:var(--text-secondary);margin:8px 0 0 0;">${escapeHtml(failure.description)}</p>
-      ${failure.helpUrl ? `<p style="margin:6px 0 0 0;"><a href="${escapeHtml(failure.helpUrl)}" target="_blank" rel="noopener noreferrer">Learn more</a></p>` : ''}
+      <p style="color:var(--text-secondary);margin:8px 0;">${escapeHtml(failure.description)}</p>
+      ${failure.helpUrl ? `<a href="${escapeHtml(failure.helpUrl)}" target="_blank" rel="noopener noreferrer">Learn more<span class="visually-hidden"> about this rule</span></a>` : ''}
     </div>
     <div class="node-list">
       ${nodesHtml || '<div class="empty-state">No elements associated.</div>'}
