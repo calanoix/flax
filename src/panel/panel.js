@@ -225,15 +225,21 @@ function renderFailureDetails(failure) {
 
       return `
         <div class="node-card${isHighlighted ? ' is-highlighted' : ''}" data-node-index="${i}">
+          <h3 class="visually-hidden">
+            Issue ${i + 1}
+            ${isHighlighted ? '<span class="visually-hidden"> highlighted</span>' : ''}
+          </h3>
           <pre class="node-card-html"><code>${highlightHtmlSnippet(htmlSnippet)}</code></pre>
           <div class="node-card-actions">
-            <button type="button" class="node-action-btn node-action-target${isHighlighted ? ' is-active' : ''}" data-action="target" data-node-index="${i}" title="Highlight the element on the page">
+            <button type="button" class="node-action-btn node-action-target${isHighlighted ? ' is-active' : ''}" data-action="target" data-node-index="${i}" aria-pressed="${isHighlighted}">
               ${ICON_TARGET}
-              ${isHighlighted ? 'Remove' : 'Locate'}
+              Highlight
+              <span class="visually-hidden"> issue ${i + 1}</span>
             </button>
-            <button type="button" class="node-action-btn node-action-code" data-action="code" data-node-index="${i}" title="Open in the Elements panel">
+            <button type="button" class="node-action-btn node-action-code" data-action="code" data-node-index="${i}">
               ${ICON_CODE}
               Inspect
+              <span class="visually-hidden"> issue ${i + 1}</span>
             </button>
           </div>
           ${dataMessageHtml}
@@ -359,7 +365,12 @@ async function toggleHighlight(failure, nodeIndex, node) {
     const btn = cardEl.querySelector('.node-action-target');
     if (btn) {
       btn.classList.toggle('is-active', isActive);
-      btn.innerHTML = `${ICON_TARGET}${isActive ? 'Remove' : 'Locate'}`;
+      btn.ariaPressed = isActive ? 'true' : 'false';
+    }
+
+    const heading = cardEl.querySelector('h3.visually-hidden');
+    if (heading) {
+      heading.innerHTML = heading.innerHTML.replace(/ highlighted$/, '') + (isActive ? ' highlighted' : '');
     }
   });
 }
