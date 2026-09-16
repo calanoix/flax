@@ -215,6 +215,8 @@ function selectFailure(index) {
 }
 
 function renderFailureDetails(failure) {
+  failureDetailsEl.scrollTop = 0;
+
   if (!failure) {
     failureDetailsEl.innerHTML = '<div class="empty-state">Select a rule from the list to see details.</div>';
     return;
