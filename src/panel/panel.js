@@ -159,7 +159,7 @@ function renderFailuresList() {
       const bestPracticeTag = isBestPractice ? '<span class="best-practice-tag">Best practice</span>' : '';
       return `
         <li>
-          <div class="failure-item" data-index="${i}" tabindex="0">
+          <div class="failure-item" data-index="${i}" tabindex="0" aria-current="false">
             <span class="badge badge-${impact}">${escapeHtml(impact)}</span>
             <span class="failure-item-text">
               ${bestPracticeTag}
@@ -201,6 +201,7 @@ function selectFailure(index) {
 
   failuresListEl.querySelectorAll('.failure-item').forEach((el) => {
     el.classList.toggle('selected', Number(el.dataset.index) === index);
+    el.ariaCurrent = Number(el.dataset.index) === index ? 'true' : 'false';
   });
 
   // Switching rules: any previous highlight no longer matches what's shown
