@@ -371,6 +371,11 @@ div.failure-item:focus-visible {
   background-color: var(--border-color);
 }
 
+.issues-list {
+  list-style: none;
+  padding: 0;
+}
+
 .summary {
   font-size: 11px;
   color: var(--text-secondary);
