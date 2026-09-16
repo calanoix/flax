@@ -26,28 +26,6 @@ let selectedIndex = null;
 let highlightedNodeKey = null; // identifies the element currently highlighted on the page
 let hasScanned = false; // distinguishes "not yet scanned" from "scanned, zero issues"
 
-// --- Responsive stacked layout (<350px): sidebar height measurement ---
-// See the comment above the @container rule in panel.css for why this can't
-// be pure CSS: .sidebar has overflow-y: auto, and browsers don't agree on
-// what min-content means for a scrollable flex/grid item. Instead, we
-// measure the sidebar content's real (unclamped) height here and feed it
-// into a CSS variable that the grid-template-rows clamp() consumes.
-//
-// We observe #failures-list-inner (the content wrapper), not #failures-list
-// (.sidebar) itself: once the stacked grid clamps .sidebar's row to
-// --sidebar-stack-height, .sidebar's own box stops changing size when its
-// content changes — that's the whole point of the clamp — so a
-// ResizeObserver on .sidebar would go silent right when we need it most.
-// The inner wrapper is never height-constrained, so its natural size always
-// reflects the true content height, scanned or not, filtered or not.
-function updateSidebarStackHeight() {
-  const height = failuresListInnerEl.scrollHeight;
-  failuresListEl.style.setProperty('--sidebar-stack-height', `${height}px`);
-}
-
-const sidebarResizeObserver = new ResizeObserver(() => updateSidebarStackHeight());
-sidebarResizeObserver.observe(failuresListInnerEl);
-
 // Display order for severities (most to least severe)
 const IMPACT_ORDER = { critical: 0, serious: 1, moderate: 2, minor: 3 };
 

@@ -37,18 +37,20 @@
         Best practices
       </button>
       <div class="toolbar-spacer"></div>
-      <div class="summary" id="summary-text">
-        <span id="summary-count-text"></span><span id="summary-wcag-text">WCAG 2.1 AA</span>
+      <div class="results-meta">
+        <div class="summary" id="summary-text">
+          <span id="summary-count-text"></span><span id="summary-wcag-text">WCAG 2.1 AA</span>
+        </div>
+        <button id="export-csv-btn" class="btn btn-icon-only" title="Export as CSV">
+          <span class="visually-hidden">Export as CSV</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <polyline points="7 10 12 15 17 10" />
+            <line x1="12" y1="15" x2="12" y2="3" />
+          </svg>
+        </button>
       </div>
-      <button id="export-csv-btn" class="btn btn-icon-only" title="Export as CSV">
-        <span class="visually-hidden">Export as CSV</span>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-          stroke-linecap="round" stroke-linejoin="round">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-          <polyline points="7 10 12 15 17 10" />
-          <line x1="12" y1="15" x2="12" y2="3" />
-        </svg>
-      </button>
     </header>
 
     <!-- Main content area: single column before/without results, two columns once issues are found -->
@@ -79,6 +81,7 @@
         </svg>
       </button>
       <h1 class="settings-title">Settings</h1>
+      <div class="toolbar-spacer"></div>
       <div class="settings-versions">
         <span>flax: <strong id="version-extension">—</strong></span>
         <a href="https://github.com/calanoix/flax" target="_blank" class="github-link"

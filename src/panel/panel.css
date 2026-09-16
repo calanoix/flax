@@ -299,6 +299,25 @@ div.failure-item:focus-visible {
    the background color, even though both share the .toolbar base class. */
 .toolbar-results {
   background-color: var(--bg-color);
+  height: auto;
+  min-height: 36px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+
+.results-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Pushes the settings gear to the toolbar's right edge */
+.toolbar-spacer {
+  flex-grow: 1;
 }
 
 .btn-toggle {
@@ -397,11 +416,6 @@ div.failure-item:focus-visible {
   font-weight: 300;
 }
 
-/* Pushes the settings gear to the toolbar's right edge */
-.toolbar-spacer {
-  flex: 1;
-}
-
 /* Structural Layout */
 .container {
   display: flex;
@@ -458,18 +472,19 @@ div.failure-item:focus-visible {
    a sane floor so the details pane never fully collapses. */
 @container panel-view (max-width: 350px) {
   .container {
-    display: grid;
-    grid-template-rows: clamp(0px, var(--sidebar-stack-height, min-content), 50%) 1fr;
+    flex-direction: column;
   }
 
   .sidebar {
     width: 100%;
+    flex: 0 0 35%;
     border-right: none;
     border-bottom: 1px solid var(--border-color);
   }
 
   .details-panel {
     width: 100%;
+    flex: 1 1 65%;
     min-height: 0;
     box-shadow: 0 -4px 8px -2px rgba(0, 0, 0, 0.15);
     position: relative;
@@ -654,7 +669,14 @@ div.failure-item:focus-visible {
 /* ===================== Settings view ===================== */
 
 .toolbar-settings {
-  gap: 10px;
+  height: auto;
+  min-height: 36px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding-top: 6px;
+  padding-bottom: 6px;
 }
 
 .settings-title {
@@ -664,7 +686,6 @@ div.failure-item:focus-visible {
 }
 
 .settings-versions {
-  margin-left: auto;
   display: flex;
   align-items: center;
   gap: 12px;
