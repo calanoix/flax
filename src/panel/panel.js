@@ -713,11 +713,13 @@ async function saveSettings() {
 function showSettingsView() {
   scanViewEl.classList.add('is-hidden');
   settingsViewEl.classList.remove('is-hidden');
+  settingsBackBtn.focus();
 }
 
 function showScanView() {
   settingsViewEl.classList.add('is-hidden');
   scanViewEl.classList.remove('is-hidden');
+  settingsBtn.focus();
 }
 
 function populateVersions() {
