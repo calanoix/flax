@@ -136,17 +136,17 @@ function renderFailuresList() {
       const isBestPractice = Array.isArray(failure.tags) && failure.tags.includes('best-practice');
       const bestPracticeTag = isBestPractice ? '<span class="best-practice-tag">Best practice</span>' : '';
       return `
-        <li>
-          <div class="failure-item" data-index="${i}" tabindex="0" aria-current="false">
-            <span class="badge badge-${impact}">${escapeHtml(impact)}</span>
-            <span class="failure-item-text">
-              ${bestPracticeTag}
+        <li class="failure-item" data-index="${i}">
+          <h2 class="failure-title">
+            <button class="failure-btn" aria-current="false">
               ${escapeHtml(failure.help || failure.id)}
-              <small style="display:block;color:var(--text-secondary);">
-                ${nodeCount} element${nodeCount > 1 ? 's' : ''}
-              </small>
-            </span>
-          </div>
+            </button>
+          </h2>
+          <span class="badge badge-${impact}">${escapeHtml(impact)}</span>
+          ${bestPracticeTag}
+          <small style="display:block;color:var(--text-secondary);">
+            ${nodeCount} element${nodeCount > 1 ? 's' : ''}
+          </small>
         </li>
       `;
     })
@@ -155,8 +155,10 @@ function renderFailuresList() {
   failuresListInnerEl.innerHTML = `<ul class="issues-list">${failuresMap}</ul>`;
 
   failuresListEl.querySelectorAll('.failure-item').forEach((el) => {
-    el.addEventListener('click', () => {
-      const index = Number(el.dataset.index);
+    const btn = el.querySelector('.failure-btn');
+    const index = Number(el.dataset.index);
+
+    btn.addEventListener('click', () => {
       selectFailure(index);
     });
   });
@@ -178,8 +180,12 @@ function selectFailure(index) {
   selectedIndex = index;
 
   failuresListEl.querySelectorAll('.failure-item').forEach((el) => {
-    el.classList.toggle('selected', Number(el.dataset.index) === index);
-    el.ariaCurrent = Number(el.dataset.index) === index ? 'true' : 'false';
+    const isSelected = Number(el.dataset.index) === index;
+    el.classList.toggle('selected', isSelected);
+    const btn = el.querySelector('.failure-btn');
+    if (btn) {
+      btn.setAttribute('aria-current', isSelected ? 'true' : 'false');
+    }
   });
 
   // Switching rules: any previous highlight no longer matches what's shown
