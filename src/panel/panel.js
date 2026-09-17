@@ -123,7 +123,7 @@ function renderFailuresList() {
   if (!visible.length) {
     const hiddenCount = currentFailures.length - visible.length;
     failuresListInnerEl.innerHTML = hiddenCount > 0
-      ? `<div class="empty-state">${hiddenCount} issue${hiddenCount > 1 ? 's' : ''} hidden: turn on Best practices to show</div>`
+      ? `<div class="empty-state">${hiddenCount} best practice${hiddenCount > 1 ? 's' : ''} hidden</div>`
       : '<div class="empty-state">No issues found! 🎉</div>';
     updateLayout();
     return;
@@ -145,7 +145,7 @@ function renderFailuresList() {
           <span class="badge badge-${impact}">${escapeHtml(impact)}</span>
           ${bestPracticeTag}
           <small style="display:block;color:var(--text-secondary);">
-            ${nodeCount} element${nodeCount > 1 ? 's' : ''}
+            ${nodeCount} issue${nodeCount > 1 ? 's' : ''}
           </small>
         </li>
       `;
