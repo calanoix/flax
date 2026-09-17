@@ -505,12 +505,20 @@ function setSummaryScanning() {
   updateWcagLevelText();
 }
 
+// True while a scan is in flight; used to ignore repeat clicks on Scan
+// without disabling the button (disabling it would drop keyboard focus).
+let isScanningNow = false;
+
 function setScanning(isScanning) {
-  scanBtn.disabled = isScanning;
+  isScanningNow = isScanning;
+  scanBtn.setAttribute('aria-disabled', String(isScanning));
   scanBtn.classList.toggle('is-loading', isScanning);
+  mainContainerEl.setAttribute('aria-busy', String(isScanning));
 }
 
 async function runAxeScan() {
+  if (isScanningNow) return;
+
   setScanning(true);
   setSummaryScanning();
 
