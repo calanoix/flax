@@ -215,27 +215,25 @@ function renderFailureDetails(failure) {
       const dataMessageHtml = buildDataMessage(node);
 
       return `
-        <li>
-          <div class="node-card${isHighlighted ? ' is-highlighted' : ''}" data-node-index="${i}">
-            <h3 class="visually-hidden">
-              Issue ${i + 1}
-              ${isHighlighted ? '<span class="visually-hidden"> highlighted</span>' : ''}
-            </h3>
-            <pre class="node-card-html"><code>${highlightHtmlSnippet(htmlSnippet)}</code></pre>
-            <div class="node-card-actions">
-              <button type="button" class="node-action-btn node-action-target${isHighlighted ? ' is-active' : ''}" data-action="target" data-node-index="${i}" aria-pressed="${isHighlighted}">
-                ${ICON_TARGET}
-                Highlight
-                <span class="visually-hidden"> issue ${i + 1}</span>
-              </button>
-              <button type="button" class="node-action-btn node-action-code" data-action="code" data-node-index="${i}">
-                ${ICON_CODE}
-                Inspect
-                <span class="visually-hidden"> issue ${i + 1}</span>
-              </button>
-            </div>
-            ${dataMessageHtml}
+        <li class="node-card${isHighlighted ? ' is-highlighted' : ''}" data-node-index="${i}">
+          <h3 class="visually-hidden">
+            Issue ${i + 1}
+            ${isHighlighted ? '<span class="visually-hidden"> highlighted</span>' : ''}
+          </h3>
+          <pre class="node-card-html"><code>${highlightHtmlSnippet(htmlSnippet)}</code></pre>
+          <div class="node-card-actions">
+            <button type="button" class="node-action-btn node-action-target${isHighlighted ? ' is-active' : ''}" data-action="target" data-node-index="${i}" aria-pressed="${isHighlighted}">
+              ${ICON_TARGET}
+              Highlight
+              <span class="visually-hidden"> issue ${i + 1}</span>
+            </button>
+            <button type="button" class="node-action-btn node-action-code" data-action="code" data-node-index="${i}">
+              ${ICON_CODE}
+              Inspect
+              <span class="visually-hidden"> issue ${i + 1}</span>
+            </button>
           </div>
+          ${dataMessageHtml}
         </li>
       `;
     })
