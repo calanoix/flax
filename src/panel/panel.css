@@ -237,9 +237,14 @@ a:focus-visible {
   flex-shrink: 0;
 }
 
-.btn-icon-only:hover {
+.btn-icon-only:hover:not(:disabled) {
   background-color: rgba(128, 128, 128, 0.15);
   color: var(--text-primary);
+}
+
+.btn-icon-only:disabled {
+  opacity: 0.4;
+  cursor: default;
 }
 
 .btn-icon-only svg {

@@ -556,6 +556,7 @@ async function runAxeScan() {
     failuresListInnerEl.innerHTML = `<div class="empty-state">Error: ${escapeHtml(error.message)}</div>`;
   } finally {
     setScanning(false);
+    exportCsvBtn.disabled = !hasScanned || countTotalIssues() === 0;
   }
 }
 
