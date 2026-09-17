@@ -482,19 +482,40 @@ function countTotalIssues() {
   return getVisibleFailures().reduce((sum, v) => sum + (v.nodes?.length || 0), 0);
 }
 
+// Rule-level count of best-practice failures currently hidden by the display
+// filter (as opposed to countTotalIssues(), which counts nodes within the
+// visible/non-best-practice failures only).
+function countHiddenBestPracticeIssues() {
+  if (currentSettings.bestPractices) return 0;
+  return currentFailures.filter(
+    (v) => Array.isArray(v.tags) && v.tags.includes('best-practice')
+  ).length;
+}
+
 // Builds the "X issues" / "0 issue" summary count text from the current
 // visible failures. Shared by the post-scan and post-filter-toggle paths.
+// When best practices are hidden and at least one was found, appends a
+// visually-hidden note so screen reader users aren't left assuming "0
+// issues" means the page has none at all.
 function buildIssueCountText() {
   const totalIssues = countTotalIssues();
-  return `${totalIssues} issue${totalIssues > 1 ? 's' : ''}`;
+  const baseText = `${totalIssues} issue${totalIssues > 1 ? 's' : ''}`;
+
+  const hiddenBpCount = countHiddenBestPracticeIssues();
+  if (hiddenBpCount === 0) return baseText;
+
+  const hiddenNote = `${hiddenBpCount} best practice${hiddenBpCount > 1 ? 's' : ''} hidden`;
+  return `${escapeHtml(baseText)}<span class="visually-hidden">, ${escapeHtml(hiddenNote)}</span>`;
 }
 
 // Updates the "X issues | WCAG ..." summary. The count segment (weight 400)
 // and the "| WCAG ..." segment (weight 300) are separate spans so panel.css
 // can style each independently; the separator lives with the WCAG segment
 // since it always renders, while the count segment is empty pre-scan.
-function setSummary(countText) {
-  summaryCountTextEl.textContent = countText || '';
+// countHtml may contain markup (e.g. a visually-hidden note appended by
+// buildIssueCountText), so it's set via innerHTML rather than textContent.
+function setSummary(countHtml) {
+  summaryCountTextEl.innerHTML = countHtml || '';
   updateWcagLevelText();
 }
 

@@ -7,6 +7,7 @@
   margin: -1px !important;
   overflow: hidden !important;
   padding: 0 !important;
+  position: absolute !important;
   width: 1px !important;
   white-space: nowrap !important;
   /* 3 */
@@ -211,6 +212,7 @@ body {
   cursor: pointer;
   flex-shrink: 0;
   user-select: none;
+  position: relative;
 }
 
 .btn:focus-visible,
@@ -235,6 +237,7 @@ a:focus-visible {
   background: transparent;
   color: var(--text-secondary);
   flex-shrink: 0;
+  justify-content: center;
 }
 
 .btn-icon-only:hover:not(:disabled) {
