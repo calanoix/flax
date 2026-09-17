@@ -272,6 +272,31 @@ a:focus-visible {
   cursor: default;
 }
 
+/* Scanning spinner shown inline in the summary text while a scan runs */
+.summary-spinner {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin-right: 5px;
+  border: 1.5px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  vertical-align: -1px;
+  animation: summary-spin 0.7s linear infinite;
+}
+
+@keyframes summary-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .summary-spinner {
+    animation-duration: 1.6s;
+  }
+}
+
 /* Brand header: logo placeholder + extension name + settings gear */
 .toolbar-brand {
   gap: 8px;

@@ -498,6 +498,13 @@ function setSummary(countText) {
   updateWcagLevelText();
 }
 
+// Shows a spinning indicator + "Scanning" in place of the usual count text,
+// used instead of setSummary() while a scan is in progress.
+function setSummaryScanning() {
+  summaryCountTextEl.innerHTML = '<span class="summary-spinner" aria-hidden="true"></span>Scanning';
+  updateWcagLevelText();
+}
+
 function setScanning(isScanning) {
   scanBtn.disabled = isScanning;
   scanBtn.classList.toggle('is-loading', isScanning);
@@ -505,7 +512,7 @@ function setScanning(isScanning) {
 
 async function runAxeScan() {
   setScanning(true);
-  setSummary('Scanning…');
+  setSummaryScanning();
 
   try {
     // 1. Inject axe-core using the correct path
