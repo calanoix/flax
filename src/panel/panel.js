@@ -6,7 +6,7 @@ const failureDetailsEl = document.getElementById('failure-details');
 const summaryCountTextEl = document.getElementById('summary-count-text');
 const summaryWcagTextEl = document.getElementById('summary-wcag-text');
 const scanBtn = document.getElementById('scan-btn');
-const mainContainerEl = document.getElementById('main-container');
+const resultsContainerEl = document.getElementById('results-container');
 const bpToggleBtn = document.getElementById('bp-toggle-btn');
 const exportCsvBtn = document.getElementById('export-csv-btn');
 
@@ -172,7 +172,7 @@ function updateLayout() {
   const visible = getVisibleFailures();
   const showTwoColumns = hasScanned && visible.length > 0;
 
-  mainContainerEl.classList.toggle('is-single-column', !showTwoColumns);
+  resultsContainerEl.classList.toggle('is-single-column', !showTwoColumns);
   failureDetailsEl.classList.toggle('is-hidden', !showTwoColumns);
 }
 
@@ -534,7 +534,7 @@ function setScanning(isScanning) {
   isScanningNow = isScanning;
   scanBtn.setAttribute('aria-disabled', String(isScanning));
   scanBtn.classList.toggle('is-loading', isScanning);
-  mainContainerEl.setAttribute('aria-busy', String(isScanning));
+  resultsContainerEl.setAttribute('aria-busy', String(isScanning));
 }
 
 async function runAxeScan() {
@@ -585,7 +585,7 @@ async function runAxeScan() {
   } catch (error) {
     console.error('Unable to run axe-core:', error);
     setSummary('Error while scanning. See console.');
-    mainContainerEl.classList.add('is-single-column');
+    resultsContainerEl.classList.add('is-single-column');
     failureDetailsEl.classList.add('is-hidden');
     failuresListInnerEl.innerHTML = `<div class="empty-state">Error: ${escapeHtml(error.message)}</div>`;
   } finally {

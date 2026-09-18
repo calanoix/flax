@@ -27,45 +27,47 @@
       </button>
     </header>
 
-    <!-- Results bar: Scan control, Best practices toggle, and summary text -->
-    <header class="toolbar toolbar-results" id="results-toolbar">
-      <button id="scan-btn" class="btn btn-primary">
-        <span aria-hidden="true" class="btn-icon">▶</span> Scan
-      </button>
-      <button id="bp-toggle-btn" class="btn btn-toggle" aria-pressed="true">
-        <span class="btn-toggle-dot" aria-hidden="true"></span>
-        Best practices
-      </button>
-      <div class="toolbar-spacer"></div>
-      <div class="results-meta">
-        <div class="summary" id="summary-text">
-          <span id="summary-count-text" role="status"></span><span id="summary-wcag-text">WCAG 2.1 AA</span>
-        </div>
-        <button id="export-csv-btn" class="btn btn-icon-only" title="Export as CSV" disabled>
-          <span class="visually-hidden">Export as CSV</span>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-            stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-            <polyline points="7 10 12 15 17 10" />
-            <line x1="12" y1="15" x2="12" y2="3" />
-          </svg>
+    <main class="main-content">
+      <!-- Results bar: Scan control, Best practices toggle, and summary text -->
+      <section class="toolbar toolbar-results" id="results-toolbar" aria-label="Scan controls and summary">
+        <button id="scan-btn" class="btn btn-primary">
+          <span aria-hidden="true" class="btn-icon">▶</span> Scan
         </button>
-      </div>
-    </header>
-
-    <!-- Main content area: single column before/without results, two columns once issues are found -->
-    <main class="container" id="main-container">
-      <!-- Left column: failed rules list -->
-      <section aria-label="Failed rules" class="sidebar" id="failures-list">
-        <div class="sidebar-content" id="failures-list-inner">
-          <div class="empty-state">Click "Scan page" to get started.</div>
+        <button id="bp-toggle-btn" class="btn btn-toggle" aria-pressed="true">
+          <span class="btn-toggle-dot" aria-hidden="true"></span>
+          Best practices
+        </button>
+        <div class="toolbar-spacer"></div>
+        <div class="results-meta">
+          <div class="summary" id="summary-text">
+            <span id="summary-count-text" role="status"></span><span id="summary-wcag-text">WCAG 2.1 AA</span>
+          </div>
+          <button id="export-csv-btn" class="btn btn-icon-only" title="Export as CSV" disabled>
+            <span class="visually-hidden">Export as CSV</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="7 10 12 15 17 10" />
+              <line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+          </button>
         </div>
       </section>
 
-      <!-- Right column: details of the selected rule -->
-      <section aria-label="Issues of selected rule" class="details-panel is-hidden" id="failure-details">
-        <div class="empty-state">Select a rule from the list to see details.</div>
-      </section>
+      <!-- Main content area: single column before/without results, two columns once issues are found -->
+      <div class="container" id="results-container">
+        <!-- Left column: failed rules list -->
+        <section aria-label="Failed rules" class="sidebar" id="failures-list">
+          <div class="sidebar-content" id="failures-list-inner">
+            <div class="empty-state">Click "Scan page" to get started.</div>
+          </div>
+        </section>
+
+        <!-- Right column: details of the selected rule -->
+        <section aria-label="Issues of selected rule" class="details-panel is-hidden" id="failure-details">
+          <div class="empty-state">Select a rule from the list to see details.</div>
+        </section>
+      </div>
     </main>
   </div>
 
@@ -96,7 +98,7 @@
       </div>
     </header>
 
-    <div class="settings-content">
+    <main class="settings-content">
       <div class="settings-card">
         <h2 class="settings-card-title">Appearance</h2>
 
@@ -147,7 +149,7 @@
           </div>
         </div>
       </div>
-    </div>
+    </main>
   </div>
 
   <script src="panel.js"></script>

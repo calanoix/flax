@@ -199,6 +199,13 @@ body {
   gap: 8px;
 }
 
+.main-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
 .btn {
   display: inline-flex;
   align-items: center;
