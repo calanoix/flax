@@ -1,4 +1,5 @@
-const inspectedTabId = chrome.devtools.inspectedWindow.tabId;
+const browserAPI = typeof browser !== 'undefined' ? browser : chrome;
+const inspectedTabId = browserAPI.devtools.inspectedWindow.tabId;
 
 const failuresListEl = document.getElementById('failures-list');
 const failuresListInnerEl = document.getElementById('failures-list-inner');
@@ -333,10 +334,10 @@ async function toggleHighlight(failure, nodeIndex, node) {
     if (turningOn) {
       // Clear any existing highlight first (only one at a time)
       await clearPageHighlight();
-      await chrome.scripting.executeScript({
-        target: { tabId: inspectedTabId },
-        func: highlightElementInPage,
-        args: [target]
+      await browserAPI.runtime.sendMessage({
+        type: 'HIGHLIGHT_ELEMENT',
+        tabId: inspectedTabId,
+        target
       });
       highlightedNodeKey = nodeKey;
     } else {
@@ -380,7 +381,7 @@ async function openInElementsPanel(node) {
     })()
   `;
 
-  chrome.devtools.inspectedWindow.eval(expression, (result, isException) => {
+  browserAPI.devtools.inspectedWindow.eval(expression, (result, isException) => {
     if (isException || !result) {
       console.error('Unable to open the element in the Elements panel:', isException || 'element not found');
     }
@@ -388,95 +389,18 @@ async function openInElementsPanel(node) {
 }
 
 async function clearPageHighlight() {
-  await chrome.scripting.executeScript({
-    target: { tabId: inspectedTabId },
-    func: clearHighlightInPage
+  await browserAPI.runtime.sendMessage({
+    type: 'CLEAR_HIGHLIGHT',
+    tabId: inspectedTabId
   });
 }
 
-// --- Functions injected into the inspected page ---
-// (must be self-contained: no access to panel-scope variables)
-
-function highlightElementInPage(selectors) {
-  const OVERLAY_ID = '__flax_a11y_overlay__';
-  const STYLE_ID = '__flax_a11y_style__';
-
-  // Clear any previous highlight first
-  document.getElementById(OVERLAY_ID)?.remove();
-  if (window.__flaxA11yCleanup) {
-    window.__flaxA11yCleanup();
-    window.__flaxA11yCleanup = null;
-  }
-
-  let el = null;
-  try {
-    const selector = Array.isArray(selectors) ? selectors[selectors.length - 1] : selectors;
-    el = document.querySelector(selector);
-  } catch (e) {
-    // invalid selector, ignore
-  }
-
-  if (!el) return;
-
-  // Inject the max-priority overlay style once
-  if (!document.getElementById(STYLE_ID)) {
-    const style = document.createElement('style');
-    style.id = STYLE_ID;
-    style.textContent = `
-      #${OVERLAY_ID} {
-        position: fixed;
-        pointer-events: none;
-        border: 2px solid #d93025;
-        border-radius: 2px;
-        /* Stacked shadows fading outward simulate a soft glow around the
-           border, without any solid fill covering the element itself. */
-        box-shadow:
-          0 0 0 2px rgba(217, 48, 37, 0.35),
-          0 0 6px 4px rgba(217, 48, 37, 0.22),
-          0 0 14px 8px rgba(217, 48, 37, 0.10);
-        z-index: 2147483647; /* max value, sits above any local stacking context */
-        transition: all 80ms ease-out;
-      }
-    `;
-    document.documentElement.appendChild(style);
-  }
-
-  const overlay = document.createElement('div');
-  overlay.id = OVERLAY_ID;
-  document.documentElement.appendChild(overlay);
-
-  function positionOverlay() {
-    const rect = el.getBoundingClientRect();
-    overlay.style.top = `${rect.top}px`;
-    overlay.style.left = `${rect.left}px`;
-    overlay.style.width = `${rect.width}px`;
-    overlay.style.height = `${rect.height}px`;
-  }
-
-  positionOverlay();
-  el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-
-  // Keep the overlay glued to the element on scroll/resize
-  const onScrollOrResize = () => positionOverlay();
-  window.addEventListener('scroll', onScrollOrResize, true);
-  window.addEventListener('resize', onScrollOrResize);
-
-  window.__flaxA11yCleanup = () => {
-    window.removeEventListener('scroll', onScrollOrResize, true);
-    window.removeEventListener('resize', onScrollOrResize);
-    document.getElementById(OVERLAY_ID)?.remove();
-  };
-}
-
-function clearHighlightInPage() {
-  const OVERLAY_ID = '__flax_a11y_overlay__';
-  if (window.__flaxA11yCleanup) {
-    window.__flaxA11yCleanup();
-    window.__flaxA11yCleanup = null;
-  } else {
-    document.getElementById(OVERLAY_ID)?.remove();
-  }
-}
+// Note: the highlight/clear-highlight page-injected functions used to live
+// here. Firefox doesn't expose chrome.scripting to the DevTools panel
+// context, so all scripting.executeScript calls (and the functions they
+// inject) now live in background.js; panel.js reaches them via
+// browserAPI.runtime.sendMessage(...). See background.js for the injected
+// function bodies.
 
 function countTotalIssues() {
   return getVisibleFailures().reduce((sum, v) => sum + (v.nodes?.length || 0), 0);
@@ -545,31 +469,22 @@ async function runAxeScan() {
 
   try {
     // 1. Inject axe-core using the correct path
-    await chrome.scripting.executeScript({
-      target: { tabId: inspectedTabId },
-      files: ['lib/axe.min.js']
+    await browserAPI.runtime.sendMessage({
+      type: 'INJECT_AXE',
+      tabId: inspectedTabId
     });
 
     // 2. Run axe.run() in the inspected page, using the current Settings
     const runOptions = buildAxeRunOptions();
 
-    const results = await chrome.scripting.executeScript({
-      target: { tabId: inspectedTabId },
-      func: (options) => {
-        return new Promise((resolve, reject) => {
-          if (typeof axe === 'undefined') {
-            return reject(new Error('axe-core is not available in the page context.'));
-          }
-          axe.run(options, (err, results) => {
-            if (err) reject(err);
-            else resolve(results);
-          });
-        });
-      },
-      args: [runOptions]
+    const scanResponse = await browserAPI.runtime.sendMessage({
+      type: 'RUN_AXE_SCAN',
+      tabId: inspectedTabId,
+      options: runOptions
     });
+    if (scanResponse?.error) throw new Error(scanResponse.error);
 
-    const axeResults = results[0].result;
+    const axeResults = scanResponse.result;
     console.log('Scan results:', axeResults);
 
     currentFailures = axeResults.violations || [];
@@ -731,8 +646,11 @@ function updateWcagLevelText() {
 
 async function loadSettings() {
   try {
-    const stored = await chrome.storage.local.get('flaxA11ySettings');
-    currentSettings = { ...DEFAULT_SETTINGS, ...(stored.flaxA11ySettings || {}) };
+    const stored = await browserAPI.runtime.sendMessage({
+      type: 'STORAGE_GET',
+      key: 'flaxA11ySettings'
+    });
+    currentSettings = { ...DEFAULT_SETTINGS, ...(stored?.value || {}) };
   } catch (error) {
     console.error('Unable to load settings, using defaults:', error);
     currentSettings = { ...DEFAULT_SETTINGS };
@@ -743,7 +661,10 @@ async function loadSettings() {
 
 async function saveSettings() {
   try {
-    await chrome.storage.local.set({ flaxA11ySettings: currentSettings });
+    await browserAPI.runtime.sendMessage({
+      type: 'STORAGE_SET',
+      items: { flaxA11ySettings: currentSettings }
+    });
   } catch (error) {
     console.error('Unable to save settings:', error);
   }
@@ -761,9 +682,9 @@ function showScanView() {
   settingsBtn.focus();
 }
 
-function populateVersions() {
+async function populateVersions() {
   try {
-    const manifest = chrome.runtime.getManifest();
+    const { manifest } = await browserAPI.runtime.sendMessage({ type: 'GET_MANIFEST' });
     versionExtensionEl.textContent = `v${manifest.version}`;
   } catch (error) {
     versionExtensionEl.textContent = '—';
