@@ -31,7 +31,7 @@ let hasScanned = false; // distinguishes "not yet scanned" from "scanned, zero i
 const IMPACT_ORDER = { critical: 0, serious: 1, moderate: 2, minor: 3 };
 
 // Placeholder until axe-core's version can be read dynamically (it's installed via npm)
-const AXE_CORE_VERSION = '4.10.3';
+const AXE_CORE_VERSION = '4.13.0';
 
 // Each WCAG level cumulatively includes all lower levels/versions, per axe-core's tag semantics
 const WCAG_TAG_SETS = {
