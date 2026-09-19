@@ -16,7 +16,11 @@ A deshittified, debloated, streamlined Axe DevTools alternative. It runs `axe-co
 3. Enable **Developer mode** (top right).
 4. Click **Load unpacked** and select the `src/` directory.
 
----
-*Disclaimer: This project is independently developed and is not affiliated with, sponsored by, or endorsed by Deque Systems.*
+## Disclaimer
+This project is independently developed and is not affiliated with, sponsored by, or endorsed by Deque Systems.
 
-*Disclosure: The code of this extension was mosty written by AI, though I personally reviewed every single line (because of course it was not accessible).*
+## Disclosure
+The code of this extension was mosty written by AI, though I personally reviewed every single line (because of course it was not accessible).
+
+## License
+This project is licensed under the Apache License, Version 2.0 (Apache-2.0). See the [LICENSE](https://github.com/calanoix/flax/blob/main/LICENSE) file for details.
