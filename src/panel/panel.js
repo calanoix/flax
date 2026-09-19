@@ -283,20 +283,18 @@ function renderFailureDetails(failure) {
 // link-name, ...), so surfacing its message there is misleading — it only
 // belongs to rules actually about presentational role handling.
 const CHECKS_WITH_DATA_MESSAGE = new Set([
-  'color-contrast', 'color-contrast-enhanced', 'link-in-text-block',
-  'target-size', 'target-offset',
-  'aria-allowed-attr', 'aria-unsupported-attr', 'aria-valid-attr',
-  'aria-valid-attr-value', 'aria-required-attr', 'aria-no-deprecated-attr',
-  'aria-prohibited-attr', 'aria-conditional-attr', 'aria-errormessage',
-  'has-global-aria-attribute',
-  'aria-allowed-role', 'abstractrole', 'invalidrole', 'deprecatedrole',
-  'unsupportedrole', 'landmark-is-top-level',
-  'aria-required-children', 'aria-required-parent', 'only-dlitems',
-  'only-listitems',
+  'abstractrole', 'aria-allowed-attr', 'aria-allowed-attr-elm',
+  'aria-allowed-role', 'aria-conditional-attr', 'aria-errormessage',
+  'aria-no-deprecated-attr', 'aria-prohibited-attr', 'aria-required-attr',
+  'aria-required-children', 'aria-required-parent', 'aria-unsupported-attr',
+  'aria-valid-attr', 'aria-valid-attr-value', 'avoid-inline-spacing',
+  'color-contrast', 'color-contrast-enhanced', 'deprecatedrole',
   'duplicate-id', 'duplicate-id-active', 'duplicate-id-aria',
-  'avoid-inline-spacing', 'important-letter-spacing', 'important-line-height',
-  'important-word-spacing',
-  'meta-viewport', 'no-implicit-explicit-label'
+  'important-letter-spacing', 'important-line-height',
+  'important-word-spacing', 'invalidrole', 'landmark-is-top-level',
+  'link-in-text-block', 'meta-viewport', 'no-implicit-explicit-label',
+  'only-dlitems', 'only-listitems', 'target-offset', 'target-size',
+  'unsupportedrole'
 ]);
 
 // Finds the first sub-check on this node (across any/all/none) whose id is
