@@ -20,7 +20,7 @@ A deshittified, debloated, streamlined Axe DevTools alternative. It runs `axe-co
 This project is independently developed and is not affiliated with, sponsored by, or endorsed by Deque Systems.
 
 ## Disclosure
-The code of this extension was mosty written by AI, though I personally reviewed every single line (because of course it was not accessible).
+The code of this extension was mosty written by AI, though I personally reviewed every single line (because of course it was not accessible). The UI/UX, the name, the logo and this readme are all human-generated.
 
 ## License
 This project is licensed under the Apache License, Version 2.0 (Apache-2.0). See the [LICENSE](https://github.com/calanoix/flax/blob/main/LICENSE) file for details.
