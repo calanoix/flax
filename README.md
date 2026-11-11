@@ -14,7 +14,7 @@ A deshittified, debloated, streamlined Axe DevTools alternative. It runs `axe-co
 ## Installation
 ### From your browser's extension store
 <p style="font-size: 0; line-height: 0;">
-  <a href="#" aria-label="Available in the Chrome Web Store" style="display: inline-block; margin-right: 10px;"><img src="./assets/chrome.png" height="60px" style="display: block;"></a>
+  <a href="#" aria-label="Available in the Chrome Web Store" style="display: inline-block; margin-right: 10px;"><img src="./assets/chrome.png" height="50px" style="display: block;"></a>
   <a href="#" aria-label="Get the add-on from Firefox" style="display: inline-block; margin-right: 10px;"><img src="./assets/firefox.png" height="50px" style="display: block;"></a>
   <a href="#" aria-label="Get it from Opera addons" style="display: inline-block; margin-right: 10px;"><img src="./assets/opera.png" height="50px" style="display: block;"></a>
   <a href="#" aria-label="Get it from Microsoft Edge" style="display: inline-block;"><img src="./assets/edge.png" height="50px" style="display: block;"></a>
