@@ -13,6 +13,20 @@ A deshittified, debloated, streamlined Axe DevTools alternative. It runs `axe-co
 
 ## Installation
 ### From your browser's extension store
+<div>
+  <a href="#" aria-label="Available in the Chrome Web Store">
+    <img src="./assets/chrome.png" height="60px">
+  </a>
+  <a href="#" aria-label="Get the add-on from Firefox">
+    <img src="./assets/firefox.png" height="60px">
+  </a>
+  <a href="#" aria-label="Get it from Opera addons">
+    <img src="./assets/opera.png" height="60px">
+  </a>
+  <a href="#" aria-label="Get it from Microsoft Edge">
+    <img src="./assets/edge.png" height="60px">
+  </a>
+</div>
 
 ### From source (Chromium-based)
 1. Clone this repository.
