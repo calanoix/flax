@@ -13,25 +13,37 @@ A deshittified, debloated, streamlined Axe DevTools alternative. It runs `axe-co
 
 ## Installation
 ### From your browser's extension store
-<div>
+<div class="badges">
   <a href="#" aria-label="Available in the Chrome Web Store">
     <img src="./assets/chrome.png" height="60px">
   </a>
   <a href="#" aria-label="Get the add-on from Firefox">
-    <img src="./assets/firefox.png" height="60px">
+    <img src="./assets/firefox.png" height="50px">
   </a>
   <a href="#" aria-label="Get it from Opera addons">
-    <img src="./assets/opera.png" height="60px">
+    <img src="./assets/opera.png" height="50px">
   </a>
   <a href="#" aria-label="Get it from Microsoft Edge">
-    <img src="./assets/edge.png" height="60px">
+    <img src="./assets/edge.png" height="50px">
   </a>
 </div>
+
+<style>
+  .badges {
+  display: flex;
+  gap: 10px; /* Espace propre entre tes boutons */
+  align-items: center; /* Aligne tout le monde parfaitement au centre */
+}
+
+.badges a img {
+  display: block; /* Évite tout résidu de ligne de base */
+}
+</style>
 
 ### From source (Chromium-based)
 1. Clone this repository.
 2. Open Chrome/Brave/Edge/Chromium and navigate to `chrome://extensions/`, `brave://extensions/` or `edge://extensions/`.
-3. Enable **Developer mode** (top right).
+3. Enable **Developer mode**.
 4. Click **Load unpacked** and select the `src/` directory.
 
 ## Disclaimer
