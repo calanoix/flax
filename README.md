@@ -2,7 +2,9 @@
 
 A deshittified, debloated, streamlined Axe DevTools alternative. It runs `axe-core`, then gives you the results. That's it.
 
-![Screenshot of the flax user interface](./assets/screenshot.png)
+<div align="center">
+  <img src="./assets/screenshot.png" alt="Screenshot of the flax user interface" width="500px">
+</div>
 
 ## Philosophy
 - **Simple UI:** Everything in its right place. Two-column layout, mute colors, dark/light theme.
