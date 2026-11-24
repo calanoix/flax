@@ -1,4 +1,6 @@
-# flax
+<h1 align="center">
+  <img src="./assets/flax-logo.svg" alt="flax" width="200px">
+</h1>
 
 A deshittified, debloated, streamlined Axe DevTools alternative. It runs `axe-core`, then gives you the results. That's it.
 
