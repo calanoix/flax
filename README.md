@@ -5,7 +5,7 @@
 A deshittified, debloated, streamlined Axe DevTools alternative. It runs `axe-core`, then gives you the results. That's it.
 
 <div align="center">
-  <img src="./assets/screenshot.png" alt="Screenshot of the flax user interface" width="500px">
+  <img src="./assets/screenshot.png" alt="Screenshot of the flax user interface" width="600px">
 </div>
 
 ## Philosophy
