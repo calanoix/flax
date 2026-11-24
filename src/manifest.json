@@ -3,6 +3,12 @@
   "name": "flax",
   "version": "0.2.0",
   "description": "axe-core-based accessibility inspector",
+  "icons": {
+    "16": "assets/flax-icon-16.png",
+    "32": "assets/flax-icon-32.png",
+    "48": "assets/flax-icon-48.png",
+    "128": "assets/flax-icon-128.png"
+  },
   "devtools_page": "devtools.html",
   "background": {
     "service_worker": "background.js",

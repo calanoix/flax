@@ -190,7 +190,7 @@ body {
 
 /* Toolbar */
 .toolbar {
-  height: 36px;
+  height: 40px;
   background-color: var(--toolbar-bg);
   border-bottom: 1px solid var(--border-color);
   display: flex;
@@ -307,24 +307,48 @@ a:focus-visible {
   }
 }
 
-/* Brand header: logo placeholder + extension name + settings gear */
+/* Brand header: flax logo (icon + wordmark) + settings gear.
+   Two <img> live inside the <h1>, one per theme; only one is displayed at a
+   time, and display: none also drops the other from the accessibility tree,
+   so the heading is announced once as "flax". Theme selection mirrors the
+   color variables: dark system preference unless .theme-light, or .theme-dark. */
 .toolbar-brand {
   gap: 8px;
 }
 
-.logo-placeholder {
-  width: 24px;
-  height: 24px;
-  min-width: 24px;
-  border-radius: 6px;
-  background-color: var(--border-color);
-  flex-shrink: 0;
+.brand-name {
+  display: flex;
+  align-items: center;
+  margin: 0;
+  line-height: 0;
 }
 
-.brand-name {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--text-primary);
+.brand-logo {
+  display: block;
+  height: 28px;
+  width: auto;
+}
+
+.brand-logo-dark {
+  display: none;
+}
+
+@media (prefers-color-scheme: dark) {
+  html:not(.theme-light) .brand-logo-light {
+    display: none;
+  }
+
+  html:not(.theme-light) .brand-logo-dark {
+    display: block;
+  }
+}
+
+html.theme-dark .brand-logo-light {
+  display: none;
+}
+
+html.theme-dark .brand-logo-dark {
+  display: block;
 }
 
 /* Results bar (Scan control, best-practices toggle, summary, CSV export) —
@@ -745,7 +769,7 @@ a:focus-visible {
 
 .toolbar-settings {
   height: auto;
-  min-height: 36px;
+  min-height: 40px;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
