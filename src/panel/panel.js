@@ -67,34 +67,123 @@ const DEFAULT_SETTINGS = {
 
 let currentSettings = { ...DEFAULT_SETTINGS };
 
-// Inline SVG icons (inherit color via currentColor)
-const ICON_TARGET = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="3"/><line x1="12" y1="1" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="23"/><line x1="1" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="23" y2="12"/></svg>`;
-const ICON_CODE = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>`;
+// ===================== DOM helpers =====================
+// All rendering builds DOM nodes (no innerHTML): strings passed as children
+// always become text nodes, so page-derived data from axe results (HTML
+// snippets, selectors, messages) can never be interpreted as markup.
 
-function escapeHtml(str) {
-  const div = document.createElement('div');
-  div.textContent = str ?? '';
-  return div.innerHTML;
+// h('div', { class: 'x', 'aria-pressed': 'false' }, 'text', childNode, [more])
+// Attributes with null/undefined/false values are skipped; pass 'false' as a
+// string for ARIA attributes that must be present with a false value.
+function h(tag, attrs, ...children) {
+  const el = document.createElement(tag);
+  for (const [key, value] of Object.entries(attrs || {})) {
+    if (value === null || value === undefined || value === false) continue;
+    el.setAttribute(key, value === true ? '' : String(value));
+  }
+  el.append(...flattenChildren(children));
+  return el;
 }
 
-// Lightweight syntax highlighting for an HTML snippet (already escapeHtml'd),
-// similar in spirit to axe's own element preview: tag names, attribute names,
-// and quoted attribute values each get their own color.
-function highlightHtmlSnippet(rawHtml) {
-  const escaped = escapeHtml(rawHtml);
+function flattenChildren(children) {
+  return children
+    .flat(Infinity)
+    .filter((c) => c !== null && c !== undefined && c !== false && c !== '');
+}
 
-  // Matches an opening or closing tag: &lt;/?tagname ...attrs.../?&gt;
-  return escaped.replace(
-    /(&lt;\/?)([a-zA-Z][a-zA-Z0-9-]*)((?:\s+[^&]*?)?)(\/?&gt;)/g,
-    (whole, open, tagName, attrsPart, close) => {
-      const highlightedAttrs = attrsPart.replace(
-        /([a-zA-Z_:][-a-zA-Z0-9_:.]*)(=)(&quot;.*?&quot;|&#39;.*?&#39;)/g,
-        (m, attrName, eq, attrValue) =>
-          `<span class="tok-attr">${attrName}</span><span class="tok-punct">${eq}</span><span class="tok-string">${attrValue}</span>`
-      );
-      return `<span class="tok-punct">${open}</span><span class="tok-tag">${tagName}</span>${highlightedAttrs}<span class="tok-punct">${close}</span>`;
-    }
-  );
+const SVG_NS = 'http://www.w3.org/2000/svg';
+
+// Builds an inline SVG icon (inherits color via currentColor)
+function createIcon(svgAttrs, shapes) {
+  const svgEl = document.createElementNS(SVG_NS, 'svg');
+  const baseAttrs = {
+    viewBox: '0 0 24 24',
+    fill: 'none',
+    stroke: 'currentColor',
+    'stroke-width': '2',
+    'stroke-linecap': 'round',
+    ...svgAttrs
+  };
+  for (const [key, value] of Object.entries(baseAttrs)) svgEl.setAttribute(key, value);
+  for (const [tag, attrs] of shapes) {
+    const shapeEl = document.createElementNS(SVG_NS, tag);
+    for (const [key, value] of Object.entries(attrs)) shapeEl.setAttribute(key, String(value));
+    svgEl.append(shapeEl);
+  }
+  return svgEl;
+}
+
+const iconTarget = () => createIcon({}, [
+  ['circle', { cx: 12, cy: 12, r: 7 }],
+  ['circle', { cx: 12, cy: 12, r: 3 }],
+  ['line', { x1: 12, y1: 1, x2: 12, y2: 4 }],
+  ['line', { x1: 12, y1: 20, x2: 12, y2: 23 }],
+  ['line', { x1: 1, y1: 12, x2: 4, y2: 12 }],
+  ['line', { x1: 20, y1: 12, x2: 23, y2: 12 }]
+]);
+
+const iconCode = () => createIcon({ 'stroke-linejoin': 'round' }, [
+  ['polyline', { points: '16 18 22 12 16 6' }],
+  ['polyline', { points: '8 6 2 12 8 18' }]
+]);
+
+function emptyState(text) {
+  return h('div', { class: 'empty-state' }, text);
+}
+
+// Only http(s) links from axe metadata are rendered as links
+function safeHttpUrl(url) {
+  try {
+    const parsed = new URL(url);
+    return parsed.protocol === 'https:' || parsed.protocol === 'http:' ? parsed.href : null;
+  } catch {
+    return null;
+  }
+}
+
+const tok = (type, text) => h('span', { class: `tok-${type}` }, text);
+
+// Lightweight syntax highlighting for an HTML snippet, similar in spirit to
+// axe's own element preview: tag names, attribute names, and quoted attribute
+// values each get their own color. Works on the raw snippet and returns a
+// DocumentFragment of text nodes and token spans.
+function highlightHtmlSnippet(rawHtml) {
+  const fragment = document.createDocumentFragment();
+  const tagRe = /(<\/?)([a-zA-Z][a-zA-Z0-9-]*)((?:\s+[^>]*?)?)(\/?>)/g;
+  let lastIndex = 0;
+
+  for (const match of rawHtml.matchAll(tagRe)) {
+    const [whole, open, tagName, attrsPart, close] = match;
+    fragment.append(
+      rawHtml.slice(lastIndex, match.index),
+      tok('punct', open),
+      tok('tag', tagName),
+      ...highlightAttrs(attrsPart),
+      tok('punct', close)
+    );
+    lastIndex = match.index + whole.length;
+  }
+  fragment.append(rawHtml.slice(lastIndex));
+  return fragment;
+}
+
+function highlightAttrs(attrsPart) {
+  const parts = [];
+  const attrRe = /([a-zA-Z_:][-a-zA-Z0-9_:.]*)(=)("[^"]*"|'[^']*')/g;
+  let lastIndex = 0;
+
+  for (const match of attrsPart.matchAll(attrRe)) {
+    const [whole, attrName, eq, attrValue] = match;
+    parts.push(
+      attrsPart.slice(lastIndex, match.index),
+      tok('attr', attrName),
+      tok('punct', eq),
+      tok('string', attrValue)
+    );
+    lastIndex = match.index + whole.length;
+  }
+  parts.push(attrsPart.slice(lastIndex));
+  return parts;
 }
 
 // Failures actually shown, after applying the best-practices display filter.
@@ -116,53 +205,43 @@ function renderFailuresList() {
   const visible = getVisibleFailures();
 
   if (!hasScanned) {
-    failuresListInnerEl.innerHTML = '<div class="empty-state">Ready to scan</div>';
+    failuresListInnerEl.replaceChildren(emptyState('Ready to scan'));
     updateLayout();
     return;
   }
 
   if (!visible.length) {
     const hiddenCount = currentFailures.length - visible.length;
-    failuresListInnerEl.innerHTML = hiddenCount > 0
-      ? `<div class="empty-state">${hiddenCount} best practice${hiddenCount > 1 ? 's' : ''} hidden</div>`
-      : '<div class="empty-state">No issues found! 🎉</div>';
+    failuresListInnerEl.replaceChildren(emptyState(
+      hiddenCount > 0
+        ? `${hiddenCount} best practice${hiddenCount > 1 ? 's' : ''} hidden`
+        : 'No issues found! 🎉'
+    ));
     updateLayout();
     return;
   }
 
-  const failuresMap = visible
-    .map((failure, i) => {
-      const impact = failure.impact || 'minor';
-      const nodeCount = failure.nodes?.length || 0;
-      const isBestPractice = Array.isArray(failure.tags) && failure.tags.includes('best-practice');
-      const bestPracticeTag = isBestPractice ? '<span class="best-practice-tag">Best practice</span>' : '';
-      return `
-        <li class="failure-item" data-index="${i}">
-          <h2 class="failure-title">
-            <button class="failure-btn" aria-current="false">
-              ${escapeHtml(failure.help || failure.id)}
-            </button>
-          </h2>
-          <span class="badge badge-${impact}">${escapeHtml(impact)}</span>
-          ${bestPracticeTag}
-          <small style="display:block;color:var(--text-secondary);">
-            ${nodeCount} issue${nodeCount > 1 ? 's' : ''}
-          </small>
-        </li>
-      `;
-    })
-    .join('');
+  const items = visible.map((failure, i) => {
+    const impact = failure.impact || 'minor';
+    const nodeCount = failure.nodes?.length || 0;
+    const isBestPractice = Array.isArray(failure.tags) && failure.tags.includes('best-practice');
 
-  failuresListInnerEl.innerHTML = `<ul class="issues-list">${failuresMap}</ul>`;
-
-  failuresListEl.querySelectorAll('.failure-item').forEach((el) => {
-    const btn = el.querySelector('.failure-btn');
-    const index = Number(el.dataset.index);
-
+    const btn = h('button', { class: 'failure-btn', 'aria-current': 'false' }, failure.help || failure.id);
     btn.addEventListener('click', () => {
-      selectFailure(index);
+      selectFailure(i);
     });
+
+    return h('li', { class: 'failure-item', 'data-index': i },
+      h('h2', { class: 'failure-title' }, btn),
+      h('span', { class: `badge badge-${impact}` }, impact),
+      isBestPractice && h('span', { class: 'best-practice-tag' }, 'Best practice'),
+      h('small', { style: 'display:block;color:var(--text-secondary);' },
+        `${nodeCount} issue${nodeCount > 1 ? 's' : ''}`
+      )
+    );
   });
+
+  failuresListInnerEl.replaceChildren(h('ul', { class: 'issues-list' }, items));
 
   updateLayout();
 }
@@ -199,75 +278,74 @@ function selectFailure(index) {
   renderFailureDetails(failure);
 }
 
+function issueHeadingText(nodeIndex, isHighlighted) {
+  return `Issue ${nodeIndex + 1}${isHighlighted ? ' highlighted' : ''}`;
+}
+
 function renderFailureDetails(failure) {
   failureDetailsEl.scrollTop = 0;
 
   if (!failure) {
-    failureDetailsEl.innerHTML = '<div class="empty-state">Select a rule from the list to see details.</div>';
+    failureDetailsEl.replaceChildren(emptyState('Select a rule from the list to see details.'));
     return;
   }
 
-  const nodesHtml = (failure.nodes || [])
-    .map((node, i) => {
-      const nodeKey = nodeKeyFor(failure, i);
-      const isHighlighted = highlightedNodeKey === nodeKey;
-      const htmlSnippet = node.html || '';
+  const nodeItems = (failure.nodes || []).map((node, i) => {
+    const nodeKey = nodeKeyFor(failure, i);
+    const isHighlighted = highlightedNodeKey === nodeKey;
 
-      const dataMessageHtml = buildDataMessage(node);
-
-      return `
-        <li class="node-card${isHighlighted ? ' is-highlighted' : ''}" data-node-index="${i}">
-          <h3 class="visually-hidden">
-            Issue ${i + 1}
-            ${isHighlighted ? '<span class="visually-hidden"> highlighted</span>' : ''}
-          </h3>
-          <pre class="node-card-html"><code>${highlightHtmlSnippet(htmlSnippet)}</code></pre>
-          <div class="node-card-actions">
-            <button type="button" class="node-action-btn node-action-target${isHighlighted ? ' is-active' : ''}" data-action="target" data-node-index="${i}" aria-pressed="${isHighlighted}">
-              ${ICON_TARGET}
-              Highlight
-              <span class="visually-hidden"> issue ${i + 1}</span>
-            </button>
-            <button type="button" class="node-action-btn node-action-code" data-action="code" data-node-index="${i}">
-              ${ICON_CODE}
-              Inspect
-              <span class="visually-hidden"> issue ${i + 1}</span>
-            </button>
-          </div>
-          ${dataMessageHtml}
-        </li>
-      `;
-    })
-    .join('');
-
-  failureDetailsEl.innerHTML = `
-    <div class="detail-header">
-      <h2 class="detail-title">${escapeHtml(failure.help)}</h2>
-      <p style="color:var(--text-secondary);margin:8px 0;">${escapeHtml(failure.description)}</p>
-      ${failure.helpUrl ? `<a href="${escapeHtml(failure.helpUrl)}" target="_blank" rel="noopener noreferrer">Learn more<span class="visually-hidden"> about this rule</span></a>` : ''}
-    </div>
-    <div class="node-list">
-      <ul class="issues-list">${nodesHtml}</ul>
-    </div >
-  `;
-
-  failureDetailsEl.querySelectorAll('.node-action-target').forEach((btn) => {
-    btn.addEventListener('click', (e) => {
+    const targetBtn = h('button', {
+      type: 'button',
+      class: `node-action-btn node-action-target${isHighlighted ? ' is-active' : ''}`,
+      'data-action': 'target',
+      'data-node-index': i,
+      'aria-pressed': String(isHighlighted)
+    },
+      iconTarget(),
+      ' Highlight',
+      h('span', { class: 'visually-hidden' }, ` issue ${i + 1}`)
+    );
+    targetBtn.addEventListener('click', (e) => {
       e.stopPropagation();
-      const nodeIndex = Number(btn.dataset.nodeIndex);
-      const node = failure.nodes[nodeIndex];
-      toggleHighlight(failure, nodeIndex, node);
+      toggleHighlight(failure, i, node);
     });
-  });
 
-  failureDetailsEl.querySelectorAll('.node-action-code').forEach((btn) => {
-    btn.addEventListener('click', (e) => {
+    const codeBtn = h('button', {
+      type: 'button',
+      class: 'node-action-btn node-action-code',
+      'data-action': 'code',
+      'data-node-index': i
+    },
+      iconCode(),
+      ' Inspect',
+      h('span', { class: 'visually-hidden' }, ` issue ${i + 1}`)
+    );
+    codeBtn.addEventListener('click', (e) => {
       e.stopPropagation();
-      const nodeIndex = Number(btn.dataset.nodeIndex);
-      const node = failure.nodes[nodeIndex];
       openInElementsPanel(node);
     });
+
+    return h('li', { class: `node-card${isHighlighted ? ' is-highlighted' : ''}`, 'data-node-index': i },
+      h('h3', { class: 'visually-hidden' }, issueHeadingText(i, isHighlighted)),
+      h('pre', { class: 'node-card-html' }, h('code', null, highlightHtmlSnippet(node.html || ''))),
+      h('div', { class: 'node-card-actions' }, targetBtn, codeBtn),
+      buildDataMessage(node)
+    );
   });
+
+  const helpUrl = safeHttpUrl(failure.helpUrl);
+
+  failureDetailsEl.replaceChildren(
+    h('div', { class: 'detail-header' },
+      h('h2', { class: 'detail-title' }, failure.help),
+      h('p', { style: 'color:var(--text-secondary);margin:8px 0;' }, failure.description),
+      helpUrl && h('a', { href: helpUrl, target: '_blank', rel: 'noopener noreferrer' },
+        'Learn more',
+        h('span', { class: 'visually-hidden' }, ' about this rule')
+      )
+    ),
+    h('div', { class: 'node-list' }, h('ul', { class: 'issues-list' }, nodeItems))
+  );
 }
 
 // axe-core check IDs whose fail/incomplete message interpolates ${data.X}
@@ -313,9 +391,9 @@ function findDataMessage(node) {
 
 function buildDataMessage(node) {
   const message = findDataMessage(node);
-  if (!message) return '';
+  if (!message) return null;
 
-  return `<p class="node-data-message">${escapeHtml(message)}</p>`;
+  return h('p', { class: 'node-data-message' }, message);
 }
 
 // Builds a stable key identifying a specific node (rule + index)
@@ -360,7 +438,7 @@ async function toggleHighlight(failure, nodeIndex, node) {
 
     const heading = cardEl.querySelector('h3.visually-hidden');
     if (heading) {
-      heading.innerHTML = heading.innerHTML.replace(/ highlighted$/, '') + (isActive ? ' highlighted' : '');
+      heading.textContent = issueHeadingText(Number(cardEl.dataset.nodeIndex), isActive);
     }
   });
 }
@@ -414,7 +492,7 @@ function countHiddenBestPracticeIssues() {
   ).length;
 }
 
-// Builds the "X issues" / "0 issue" summary count text from the current
+// Builds the "X issues" / "0 issue" summary count content from the current
 // visible failures. Shared by the post-scan and post-filter-toggle paths.
 // When best practices are hidden and at least one was found, appends a
 // visually-hidden note so screen reader users aren't left assuming "0
@@ -427,24 +505,27 @@ function buildIssueCountText() {
   if (hiddenBpCount === 0) return baseText;
 
   const hiddenNote = `${hiddenBpCount} best practice${hiddenBpCount > 1 ? 's' : ''} hidden`;
-  return `${escapeHtml(baseText)}<span class="visually-hidden">, ${escapeHtml(hiddenNote)}</span>`;
+  return [baseText, h('span', { class: 'visually-hidden' }, `, ${hiddenNote}`)];
 }
 
 // Updates the "X issues | WCAG ..." summary. The count segment (weight 400)
 // and the "| WCAG ..." segment (weight 300) are separate spans so panel.css
 // can style each independently; the separator lives with the WCAG segment
 // since it always renders, while the count segment is empty pre-scan.
-// countHtml may contain markup (e.g. a visually-hidden note appended by
-// buildIssueCountText), so it's set via innerHTML rather than textContent.
-function setSummary(countHtml) {
-  summaryCountTextEl.innerHTML = countHtml || '';
+// content is a string, a node, or an array of both (e.g. the visually-hidden
+// note appended by buildIssueCountText).
+function setSummary(content) {
+  summaryCountTextEl.replaceChildren(...flattenChildren([content]));
   updateWcagLevelText();
 }
 
 // Shows a spinning indicator + "Scanning" in place of the usual count text,
 // used instead of setSummary() while a scan is in progress.
 function setSummaryScanning() {
-  summaryCountTextEl.innerHTML = '<span class="summary-spinner" aria-hidden="true"></span>Scanning';
+  summaryCountTextEl.replaceChildren(
+    h('span', { class: 'summary-spinner', 'aria-hidden': 'true' }),
+    'Scanning'
+  );
   updateWcagLevelText();
 }
 
@@ -500,7 +581,7 @@ async function runAxeScan() {
     setSummary('Error while scanning. See console.');
     resultsContainerEl.classList.add('is-single-column');
     failureDetailsEl.classList.add('is-hidden');
-    failuresListInnerEl.innerHTML = `<div class="empty-state">Error: ${escapeHtml(error.message)}</div>`;
+    failuresListInnerEl.replaceChildren(emptyState(`Error: ${error.message}`));
   } finally {
     setScanning(false);
     exportCsvBtn.disabled = !hasScanned || countTotalIssues() === 0;

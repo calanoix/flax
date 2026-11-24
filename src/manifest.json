@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "flax",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "axe-core-based accessibility inspector",
   "icons": {
     "16": "assets/flax-icon-16.png",
