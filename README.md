@@ -1,11 +1,19 @@
 <h1 align="center">
-  <img src="./assets/flax-logo.svg" alt="flax" width="200px">
+    <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/flax-logo-dark.svg">
+    <source media="(prefers-color-scheme: light)" srcset="assets/flax-logo.svg">
+    <img alt="flax" src="assets/flax-logo.svg" width="200px">
+    </picture>
 </h1>
 
 A deshittified, debloated, streamlined Axe DevTools alternative. It runs `axe-core`, then gives you the results. That's it.
 
 <div align="center">
-  <img src="./assets/screenshot.png" alt="Screenshot of the flax user interface" width="600px">
+    <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/screenshot-dark.png">
+    <source media="(prefers-color-scheme: light)" srcset="assets/screenshot-light.png">
+    <img alt="flax" src="assets/screenshot-light.png" width="600px">
+    </picture>
 </div>
 
 ## Philosophy
