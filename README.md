@@ -25,11 +25,26 @@ A deshittified, debloated, streamlined Axe DevTools alternative. It runs `axe-co
 ### From your browser's extension store
 *Coming soon, awaiting approval.*
 
-### From source (Chromium-based)
-1. Clone this repository.
-2. Open Chrome/Brave/Edge/Chromium and navigate to `chrome://extensions/`, `brave://extensions/` or `edge://extensions/`.
+### From a GitHub release
+
+Download the latest version from the [Releases page](../../releases/latest).
+
+#### Chrome, Brave, Edge and other Chromium-based browsers
+
+1. Download `flax-x.y.z-chromium.zip` and unzip it.
+2. Navigate to `chrome://extensions/`, `brave://extensions/` or `edge://extensions/`.
 3. Enable **Developer mode**.
-4. Click **Load unpacked** and select the `src/` directory.
+4. Click **Load unpacked** and select the unzipped folder (the one containing `manifest.json`).
+
+#### Firefox
+
+1. Download `flax-x.y.z-firefox.zip`.
+2. Navigate to `about:debugging#/runtime/this-firefox`.
+3. Click **Load Temporary Add-on…** and select the downloaded `.zip` file.
+
+> [!NOTE]
+> Firefox removes temporary add-ons when the browser restarts. For a permanent install, use the Firefox Add-ons store version once it's available.
+
 
 ## Disclaimer
 This project is independently developed and is not affiliated with, sponsored by, or endorsed by Deque Systems.
